@@ -1,0 +1,4 @@
+        integer, parameter :: nphasep=100,ncompp=110,nspecp=200,nsitep=10
+	integer, parameter :: natomp=360,nparp=100
+	double precision, parameter :: gadd=0.0
+	integer, parameter :: npmax=100
