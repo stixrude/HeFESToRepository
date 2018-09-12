@@ -66,7 +66,7 @@ c         write(31,*) (nnew(i),i=1,nnull)
         call nform(nnew,n,n1,q2,nspec,nnull)
 	if (adcalc) Ti = nnew(nnull+nvet)
 	if (chcalc) Pi = nnew(nnull+nvep)
-        write(31,'(a6,i5,99e12.5)') 'gibmn',iter,(n(i),i=1,nspec),Pi,Ti,nnew(ndim),nnew(nnull+nvep)
+        write(31,'(a6,5i5,99f12.5)') 'gibmn',iter,nnull,nvep,nvet,ndim,Pi,Ti,(n(i),i=1,nspec)
 	
 	write(31,*) 'Calling ssave from gibmin 1'
 	call ssave(fret,qual,nnew,fretsav,qualsav,absentsav,absentssav,nnewsav,ftol,succes)
