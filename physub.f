@@ -17,7 +17,7 @@
         double precision btaggh,btaggr,btaggv,bukph,buktph,cap,chempot,cpagg,cv
         double precision delagg,delph,deltas,dgdt,dgdtagg,dgdtaggr,dgdtaggv
         double precision dgdtph,dlnvbdt,dlnvbdtph,dlnvsdt,ent,entagg
-        double precision enth,enthagg,entoph,entph,etas,etot,fdumm,fgammam
+        double precision enth,enthagg,entoph,entph,etas,etot,fdumm,fgammam,eintagg
         double precision dlnvpdt,fgammap,flambdam,flambdap,fn,fnagg,fnph
         double precision fnphamax,fo,ftot,gaggh,gaggv,gam,gamma,ge,ghashm,ghashp
         double precision giboph,gibph,gmax,gmin,go,gop,got,gaggr,gruagg,gsh
@@ -91,6 +91,8 @@ c        write(89,'(a4,a7,a8,12a11)') 'spec','Pi','Ti','Enthalpy','Entropy','Cp'
      &   phname(nphasep)(1:7),('vp'//phname(iph)(1:11),iph=1,nph)
         write(65,*) '  Pi    depth   Ti',
      &   phname(nphasep)(1:7),('wm'//phname(iph)(1:11),iph=1,nph)
+        write(68,*) '  Pi    depth   Ti',
+     &   phname(nphasep)(1:7),('vol'//phname(iph)(1:11),iph=1,nph)
         end if
 
 C  Aggregate Properties
@@ -267,10 +269,10 @@ c	write(31,*) 'volumes in physub',ispec,n(ispec),vspeca(ispec),vol,volsum,volxs
           buktph = buktph + n(ispec)*vol/K
           gshph = gshph + n(ispec)*vol/Gsh
           volph = volph + n(ispec)*volxs
-c	write(31,*) 'calc volph from species',iph,ispec,n(ispec),volxs,volph
-c	write(31,*) 'calc bukph from species',iph,ispec,n(ispec),vol,Ks,bukph
           volpho = volpho + n(ispec)*Vo
           fnph = fnph + n(ispec)
+c	write(31,*) 'calc volph from species',iph,ispec,n(ispec),volxs,volph,wmph,fnph
+c	write(31,*) 'calc bukph from species',iph,ispec,n(ispec),vol,Ks,bukph
           cpagg = cpagg + n(ispec)*Cap
           cvagg = cvagg + n(ispec)*Cv
           alpagg = alpagg + n(ispec)*vol*alp
@@ -350,8 +352,8 @@ c	 print*, 'Phase properties',cpphtot,cvphtot,gamphtot,buktph,volph,alpph,bukph,
          vbpha(iph) = asqrt(bukph/rhoph)
          vspha(iph) = asqrt(gshph/rhoph)
          vppha(iph) = asqrt((bukph + 4./3.*gshph)/rhoph)
+         volpha(iph) = volph/fnph
          if (fnph .gt. Tsmall) then
-          volpha(iph) = volph/fnph
           entpha(iph) = entph/fnph
           henpha(iph) = henph/fnph/1000.
           gibpha(iph) = gibph/fnph/1000.
@@ -472,6 +474,7 @@ c	print*, Ksp,Gshp,dlnvsdlnv,dlnvpdlnv,dlnvdebdlnv,gamdeb
         ent = entagg 
 c        entagg = entagg + smix
 	enthagg = freeagg + Ti*entagg
+        eintagg = freeagg + Ti*entagg - 1000.*Pi*volagg
 c	print*, rho,ent,entagg,smix,wmagg,entagg/wmagg,enthagg/wmagg/1000.,freeagg/wmagg/1000.,freeagg/1000.
 c-> Include configurational entropy in computation of self-consistent isentrope
 	ent = entagg
@@ -520,7 +523,7 @@ c	print*, 'in physub',ent,smix
 C  Units in fort.56:
 C  P(GPa) depth(km) T(K) rho(g/cm^3) VB(km/s) VS(km/s) VP(km/s) VBQ(km/s) VSQ(km/s) VPQ(km/s) H(kJ/g) S(J/g/K) alpha(1e5 K^-1) cp(J/g/K) KT(GPa) Qs(-) Qp(-) rho_0(g/cm^3) dominant_phase
         write(56,'(17f25.16,2x,a5)') Pi,depth(Pi),Ti,rho,Vbh,Vsh,Vph,Vsh*vsred,
-     &   Vph*vpred,enthagg/wmagg/1000.,entagg/wmagg,1.e5*alptot,cptot,btot,qs,qp,rhoo,phname(iimax)
+     &   Vph*vpred,eintagg/wmagg/1000.,entagg/wmagg,1.e5*alptot,cptot,btot,qs,qp,rhoo,phname(iimax)
 c       write(59,500) Pi,depth(Pi),Ti,vol,baggh,btaggh,1.e5*alpagg,cpagg,
 c     &   gruagg,n(1),hsolph/1000.
 c        write(59,500) Pi,depth(Pi),Ti,vol/81.8,baggh,btaggr,1.e5*alpagg,Cv/(fn*Rgas),cpagg*wmagg,
@@ -528,7 +531,7 @@ c     &   gruagg,qq,ph
        write(599,500) Pi,depth(Pi),Ti,vol,baggh,btaggh,1.e5*alpagg,cpagg*wmagg,
      &   -1000.*alpagg*baggh*delagg,1000.*dgdtagg,-dlnvsdt*1.e5,-dlnvpdt*1.e5,deltas
        write(59,'(99f14.5)') Pi,depth(Pi),Ti,volagg,baggh,btaggh,1.e5*alpagg,cvagg*wmagg,
-     &   thet,gruagg,qq,Vdeb,ph,pzp
+     &   thet,gruagg,qq,Vdeb,ph,pzp,tmelt
         write(57,500) Pi,depth(Pi),Ti,volagg,fn,zu,1000.*Vdebold,gruagg,qq,wmav,epsilon,cvagg*wmagg/(3.*fnagg*Rgas)
      &    ,tcalagg,gamdeb,fn,fnph,fnagg,Cv/(3*fn*Rgas),thet
         write(58,'(99f12.5)') Pi,depth(Pi),Ti,rho,baggh,gaggh,Vbh,Vsh,Vph,Vbr,Vsr,Vpr,Vbv,Vsv,Vpv
@@ -538,7 +541,8 @@ c     &   gruagg,qq,ph
         write(62,500) Pi,depth(Pi),Ti,(exp(log(vbpha(iph)-asmall)),iph=1,nph)
         write(63,500) Pi,depth(Pi),Ti,(exp(log(vspha(iph)-asmall)),iph=1,nph)
         write(64,500) Pi,depth(Pi),Ti,(exp(log(vppha(iph)-asmall)),iph=1,nph)
-        write(65,500) Pi,depth(Pi),Ti,(exp(log(wmpha(iph)-asmall))/fnpha(iph),iph=1,nph)
+        write(65,500) Pi,depth(Pi),Ti,(exp(log((wmpha(iph)-asmall)/fnpha(iph))),iph=1,nph)
+        write(68,500) Pi,depth(Pi),Ti,(exp(log(volpha(iph)-asmall)),iph=1,nph)
         write(66,700) Pi,depth(Pi),Ti,(fnpha(iph)/fnagg,iph=1,nph)
         write(67,700) Pi,depth(Pi),Ti,(vabs(iph)/vabsagg,iph=1,nph)
         write(31,'(/,a)') 'Phase proportions: atomic, volume, mass'

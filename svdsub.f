@@ -9,7 +9,7 @@ C  Use LAPACK routines to perform the SVD decomposition of matrix s
         double precision b(msp)
         double precision q1(nsp,nsp),q2(nsp,nsp),n1(nsp)
         double precision u(msp,msp),w(nsp),v(nsp,nsp)
-	double precision work(5*nsp,5*nsp),rw(nsp),y(nsp),swork(msp,nsp)
+	double precision work(5*nsp),rw(nsp),y(nsp),swork(msp,nsp)
 	double precision start,finish,gsvd
         double precision, parameter :: small=1.e-6
 	data gsvd/0.0/
