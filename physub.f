@@ -523,7 +523,7 @@ c	print*, 'in physub',ent,smix
 C  Units in fort.56:
 C  P(GPa) depth(km) T(K) rho(g/cm^3) VB(km/s) VS(km/s) VP(km/s) VBQ(km/s) VSQ(km/s) VPQ(km/s) H(kJ/g) S(J/g/K) alpha(1e5 K^-1) cp(J/g/K) KT(GPa) Qs(-) Qp(-) rho_0(g/cm^3) dominant_phase
         write(56,'(17f25.16,2x,a5)') Pi,depth(Pi),Ti,rho,Vbh,Vsh,Vph,Vsh*vsred,
-     &   Vph*vpred,eintagg/wmagg/1000.,entagg/wmagg,1.e5*alptot,cptot,btot,qs,qp,rhoo,phname(iimax)
+     &   Vph*vpred,enthagg/wmagg/1000.,entagg/wmagg,1.e5*alptot,cptot,btot,qs,qp,rhoo,phname(iimax)
 c       write(59,500) Pi,depth(Pi),Ti,vol,baggh,btaggh,1.e5*alpagg,cpagg,
 c     &   gruagg,n(1),hsolph/1000.
 c        write(59,500) Pi,depth(Pi),Ti,vol/81.8,baggh,btaggr,1.e5*alpagg,Cv/(fn*Rgas),cpagg*wmagg,
