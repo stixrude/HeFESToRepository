@@ -14,7 +14,8 @@ C  Assigns Stoichiometric and Site Coefficients: s,r
         logical lox,open,square
         character*1 blank
         character*2 comp(natomp),yatom
-        character*80 form,temp
+        character*80 form
+	character*132 temp
 	character*80 subs(100)
 	double precision r(ncompp,nspecp,nsitep),s(ncompp,nspecp),rep(ncompp,nspecp,nsitep)
 c	double precision rat(ncompp,nspecp,nsitep),sat(ncompp,nspecp)

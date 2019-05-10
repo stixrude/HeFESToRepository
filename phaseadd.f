@@ -207,7 +207,7 @@ c	  write(31,*) lph,iguess,iter,fret,fretmin,qual,qualmin,ndim,(n(i),i=iphase(lp
 	 qual = qualmin
          affin(lph) = fret/fn
 C  Avoid adding phases of redundant composition
-         write(31,'(i3,1x,a5,10f12.4)') lph,phname(lph),affin(lph),
+         write(31,'(i3,1x,a5,99f12.4)') lph,phname(lph),affin(lph),
      &    (n(i),i=iphase(lph),iphase(lph)+mphase(lph)-2),qualmin,real(itermin),real(itersum),real(imin)
 c	 if (abs(fretmin - fretgmin) .gt. 1.e-6) write(31,*) 'Guess failed',fretmin/fn,fretgmin/fn,(fretgmin - fretmin)/fn,igmin,imin
 	 if (exsolve) then

@@ -44,7 +44,7 @@ c	write(31,*) 'a*a^T'
 c        call matprint(31,nco,nco,ncompp,ncompp,u)
 	call svdsub(nco,nco,u,ncompp,ncompp,bb,v1,v2,lagc,nulsvd)
         if (nulsvd .gt. 0) write(31,*) 'WARNING: Singular matrix in lagcomp'
-        write(31,'(a32,6f12.5)') 'Component chemical potentials = ',(lagc(i),i=1,nco)
+        write(31,'(a32,99f12.5)') 'Component chemical potentials = ',(lagc(i),i=1,nco)
 
         do 3 ispec=1,nspec
          cpcomp(ispec) = 0.

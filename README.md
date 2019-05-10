@@ -8,7 +8,7 @@ Citations.  If you use HeFESTo results in a publication, please cite the followi
 
 ***** WARNING *****  
 
-This version is not for public distribution.  It is for testing purposes only.  If you have questions, please contact the authors:
+This version is for testing purposes only, which means we grant the right to download, compile, and run the software, but do not grant the right to redistribute modified versions of the software either in compiled or in source-code form. If you have questions about the software, suggestions for improvements, or would like to ask for additional permissions or data files, please contact the authors:
 
 Lars Stixrude: lstixrude@epss.ucla.edu
 Carolina Lithgow-Bertelloni: clb@epss.ucla.edu

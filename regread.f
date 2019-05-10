@@ -8,7 +8,8 @@ C  assumes that the volume of solution is ideal.
 	integer nspec,nph,ndname,i,ia,ib,ic,id,ii,j,k,l,lph,ncmax,nfirst,nlast,nspeci
         character*1 blank,label
         character*4 xatom(natomp)
-        character*80 dirname,fname,newfname,header,subs(100)
+        character*80 dirname,fname,newfname,subs(100)
+        character*132 header
         character*80 sname(nspecp)
         integer mphase(nphasep),nchar(100)
 	integer ip(nspecp)
@@ -59,8 +60,8 @@ C  Search for phase
 30       continue
 C  Found new phase
 	 if (mphase(lph) .le. 1) go to 2
-	 read(108+lph,'(a80)') header
-	 call parse(header,subs,nchar,ncmax,80)
+	 read(108+lph,'(a132)') header
+	 call parse(header,subs,nchar,ncmax,132)
 	 backspace (108+lph)
          read(108+lph,*) (xatom(ii),ii=1,ncmax)
 	 print*, header,ncmax,(xatom(ii),ii=1,ncmax)

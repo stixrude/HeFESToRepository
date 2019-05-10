@@ -1,7 +1,7 @@
 	subroutine parse(string,subs,nchar,n,ncstrg)
 
 	integer n,ncstrg,i,i1,i2
-	character blank*1, string*80
+	character blank*1, string*132
 	character*80 subs(100)
 	integer nchar(100)
 	blank = ' '
