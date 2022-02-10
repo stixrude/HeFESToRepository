@@ -39,6 +39,7 @@ dfac.o dsort.o dqagse.o d1mach.o dqelg.o dqk21.o dqpsrt.o
 
 #  Get LAPACK and BLAS
 LIB1 = -framework Accelerate
+LIB2 = -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk
 
 $(COMMAND): $(MAIN) $(SUBS)
-	$(LDR) $(LFLAGS) -o $(COMMAND) $(MAIN) $(SUBS) $(LIB1) $(LIB4)
+	$(LDR) $(LFLAGS) -o $(COMMAND) $(MAIN) $(SUBS) $(LIB1) $(LIB2)

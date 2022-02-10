@@ -52,8 +52,7 @@ c	  if (absents(ispec)) go to 5
 	  sspeco(ispec) = entve
 	  cspeca(ispec) = cpve
 	  bspeca(ispec) = bkve
-c	  write(31,*) 'func 0 props',ispec,Pi,Ti,gspeca(ispec),vspeca(ispec),sspeco(ispec),cspeca(ispec)
-c	  print*, 'func 0 props',ispec,Pi,Ti,gspeca(ispec),vspeca(ispec),sspeco(ispec),cspeca(ispec)
+c	  write(31,*) 'func 0 props',ispec,Pi,Ti,gspeca(ispec),vspeco(ispec),sspeco(ispec),cspeca(ispec),Pold,Told
 5	 continue
 	 Pold = Pi
 	 Told = Ti
@@ -62,6 +61,7 @@ c	  print*, 'func 0 props',ispec,Pi,Ti,gspeca(ispec),vspeca(ispec),sspeco(ispec)
 	gloop = gloop + finish - start
 
         call nform(nnew,n,n1,q2,nspec,nnull)
+c	write(31,*) 'func',(n(i),i=1,nspec),(gspeca(i),i=1,nspec),Pi,Pold,Ti,Told
 	
 	if (.not. valid(vsum,nnew)) then
 c	 write(31,*) 'WARNING: invalid solution in func',vsum

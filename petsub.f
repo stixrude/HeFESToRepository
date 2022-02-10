@@ -138,7 +138,7 @@ C  Check whether removal of spinodal instability generates infeasible solution a
         call gibmin(nnew,fret,iter)
         itersum = itersum + iter
 	write(31,*) 'Calling ssave from petsub 1'
-        call ssave(fret,qual,nnew,fretsav,qualsav,absentsav,absentssav,nnewsav,ftol,succes)
+        call ssave(fret,qual,nnew,fretsav,qualsav,absentsav,absentssav,nnewsav,ftol,succes,ires)
         call writeout(nnew,qual,itersum,-iprint)
 
         write(31,'(/,a,2f12.5)') 'Initial restore',Pi,Ti
@@ -152,7 +152,7 @@ C  Check whether removal of spinodal instability generates infeasible solution a
          call gibmin(nnew,fret,iter)
          itersum = itersum + iter
 	 write(31,*) 'Calling ssave from petsub 2'
-         call ssave(fret,qual,nnew,fretsav,qualsav,absentsav,absentssav,nnewsav,ftol,succes)
+         call ssave(fret,qual,nnew,fretsav,qualsav,absentsav,absentssav,nnewsav,ftol,succes,ires)
          call writeout(nnew,qual,itersum,-iprint)
 	end if
 
@@ -213,6 +213,8 @@ C  Remove phases one by one and check for minimum energy solution
          fretmin = +1.e15
 	 do 961 ispec=1,nspec
 961	 dn(ispec) = 0.
+	 print*, 'Test removing the following phases',(jphase(lph),lph=1,nphpres)
+	 write(31,*) 'Test removing the following phases',(jphase(lph),lph=1,nphpres)
          do 94 lph=1,nphpres
           do 921 lphtmp=1,nph
 921       absent(lphtmp) = absenttmp(lphtmp)
@@ -299,7 +301,7 @@ C  Phase Rule Not Violated
          call gibmin(nnew,fret,iter)
          itersum = itersum + iter
 	 write(31,*) 'Calling ssave from petsub 3'
-         call ssave(fret,qual,nnew,fretsav,qualsav,absentsav,absentssav,nnewsav,ftol,succes)
+         call ssave(fret,qual,nnew,fretsav,qualsav,absentsav,absentssav,nnewsav,ftol,succes,ires)
          call writeout(nnew,qual,itersum,-iprint)
          if (.not. valid(vsum,nnew)) then
           write(31,*) 'WARNING: Solution is invalid',vsum
@@ -315,7 +317,7 @@ C  Phase Rule Not Violated
           call gibmin(nnew,fret,iter)
           itersum = itersum + iter
           write(31,*) 'Calling ssave from petsub 4'
-          call ssave(fret,qual,nnew,fretsav,qualsav,absentsav,absentssav,nnewsav,ftol,succes)
+          call ssave(fret,qual,nnew,fretsav,qualsav,absentsav,absentssav,nnewsav,ftol,succes,ires)
           call writeout(nnew,qual,itersum,-iprint)
 	 end if
          if (.not. valid(vsum,nnew)) then

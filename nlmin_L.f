@@ -1,4 +1,4 @@
-            subroutine nlmin_L(x,ndim,minf,iter)
+            subroutine nlmin_L(x,ndim,minf,iter,ires)
 	include 'P1'
 	include 'numpar.inc'
 	include 'chem.inc'
@@ -65,8 +65,8 @@ c	write(31,*) 'T Bounds',lb(ndim),ub(ndim),Tspin(ncall),ndim,nvet,adcalc
                  do 1 j=1,nspecp
 1                da(i,j) = 0.
      
-C---> Constrain the amount of each present species to be greater than zero
 	nconstr = 0
+C---> Constrain the amount of each present species to be greater than zero
 	do 22 ispec=1,nspec
 	 if (absents(ispec)) go to 22
 	 nconstr = nconstr + 1
@@ -129,8 +129,8 @@ c                write(31,*) 'nlopt min val = ', minf
 
 	iter = ncall - ncallold
 	if (iter .eq. maxeval) write(31,*) 'WARNING: Reached maximum evaluations in nlmin_L',maxeval,iter
-c	write(31,*) 'myfunc',ncall,ncallold,iter
-	write(95,*) 'Optimized',iter,minf
+c	write(31,*) 'myfunc in nlmin_L',ncall,ncallold,iter
+c	write(95,*) 'Optimized',iter,minf
 	ncallold = ncall
      
              call nlo_destroy(opt)

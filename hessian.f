@@ -9,7 +9,7 @@ C  Calculate ispec portion of hessian
         include 'absent.inc'
 
 	integer ispec,ia,ib,ic,icfe,iph,j,jsp,jspec,kst,nsitecp
-	double precision apar,chempot,dqadnj,dqbdnj,Pi,qa,qb,rsum,siza,sizb,sizi,smixi,sum1,sum2,Ti,wregsz
+	double precision apar,chempot,dqadnj,dqbdnj,Pi,qa,qb,rsum,siza,sizb,sizi,smixi,sum1,sum2,Ti,wregsz,oregsave,wregsave
 	double precision dkron,oregsz
         character*2 atom(natomp),comp(natomp)
         character*80 phname(nphasep),sname(nspecp)
@@ -79,9 +79,14 @@ c     &         ispec .ge. iophase(iph) .and. ispec .le. iophase(iph)+mophase(ip
 	    sizi = apar(ispec,41)
 	    qa = siza*ncp(ia)/nsum
 	    qb = sizb*ncp(ib)/nsum
-c	    wregsz = wreg(iph,kst,ia,ib)*2.*sizi/(siza + sizb)
+	    wregsave = wreg(iph,kst,ia,ib)
+	    oregsave = wreg(iph,kst,ib,ia)
+            wreg(iph,kst,ia,ib) = wregsave + Pi*vreg(iph,kst,ia,ib)
+            wreg(iph,kst,ib,ia) = oregsave + Pi*vreg(iph,kst,ib,ia)
             wregsz = (wreg(iph,kst,ia,ib) + wreg(iph,kst,ib,ia)*(qb - qa))*2.*abs(sizi)/(abs(siza) + abs(sizb))
             oregsz = wreg(iph,kst,ib,ia)*2.*abs(sizi)/(abs(siza) + abs(sizb))
+            wreg(iph,kst,ia,ib) = wregsave
+            wreg(iph,kst,ib,ia) = oregsave
 	    do 7 jspec=1,nspec
 	     dqadnj = f(iph,jspec)*apar(ia,41)*(dkron(jspec,ia)*nsum - ncp(ia)*apar(jspec,41))/(nsum*nsum)
 	     dqbdnj = f(iph,jspec)*apar(ib,41)*(dkron(jspec,ib)*nsum - ncp(ib)*apar(jspec,41))/(nsum*nsum)
@@ -103,6 +108,8 @@ c	      write(31,*) ia,ib,ispec,jspec,rsuma(jspec),dqbdnj,dqadnj,dkron(ispec,ia)
 c	 write(31,*) 'Hessian',ispec,jspec,hess(ispec,jspec),wregsz,qa,qb,f(iph,ispec),f(iph,jspec),dqadnj,dqbdnj
 c     &     ,apar(ispec,41),apar(jspec,41),ncp(1),ncp(2),nsum
 8	continue
+c	write(31,*) 'Hessian',ispec,(-1000./(Rgas*Ti)*hess(ispec,jspec),jspec=1,nspec)
+c	write(31,*) 'Hessian',ispec,(hess(ispec,jspec),jspec=1,nspec)
 
         return
         end

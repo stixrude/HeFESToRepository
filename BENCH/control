@@ -1,4 +1,4 @@
-0,140,14,2.8,0,0,-2,1000
+0,140,140,2.5351041002242130,0,0,-2,0,0
 6,2,4,2
 oxides
 Si           3.78251     3.78251    0
@@ -8,8 +8,8 @@ Ca            .28725      .28725    0
 Al            .43386      .43386    0
 Na            .02127      .02127    0
 1,1,1,1
-/Users/stixrude/qh/invert/par/inv310516_V
-52
+/Users/stixrude/qh/invert/par/inv270914
+51
 phase plg
 1
 an
@@ -105,6 +105,3 @@ ky
 phase neph
 0
 neph
-phase enliq
-0
-enm

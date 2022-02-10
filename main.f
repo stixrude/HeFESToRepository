@@ -10,7 +10,7 @@
 	double precision ehugo,ent,entve,etas,freeagg,ftot,gamma,gsh,P1,ph,phugo,pi,pzp
         double precision qq,rho,vtarg,starg,superad,T1,tcal,tfreeze,thet,Ti,Tiphy,tlast
 	double precision uth,uto,vhugo,vol,volve,wmagg,zeta,depth,vdeb,gamdeb,bkve
-	double precision start,finish,gmainloop
+	double precision start,finish,gmainloop,gibbs,func,Pisave,Tisave,Pfrozen,Tfrozen
 	integer i,ibulk,ic,icfe,ip,iphyflag,ispec,itersum,itertot,jt,icalc,noln
 	integer nbulk,nt,np,nvet,nvep,nobm,noth,maxij,lineart,nbm,mfit
         character*2 atom(natomp),comp(natomp)
@@ -59,6 +59,8 @@ c     &                 superad,nPREM,ns,adiabat,chcalc,adcalc,hucalc
         na = 0
         call setup(binit,dbulk,P1,dP,nP,T1,dT,nT,superad,tfreeze,nbulk,adiabat,chcalc,adcalc,hucalc,frozen,nvet,nvep)
 
+	if (frozen) Pfrozen = superad
+	if (frozen) Tfrozen = tfreeze
         iphyflag = 0
         itertot = 0
 	Pi = 0.
@@ -116,7 +118,20 @@ c          if (Ti .ne. Tiphy) print*, 'Frozen calculation: T_pet=',Ti,' T_phy=',
           write(31,700)  Pi,depthp,Ti
 c          if (adcalc .and. tlast .ne. 0.) Ti = tlast
 	  icalc = icalc + 1
-	  if (frozen .and. icalc .gt. 1) go to 10
+	  if (frozen) then
+	   if (icalc .eq. 1) then
+	    Pisave = Pi
+	    Tisave = Ti
+	    Pi = Pfrozen
+	    Ti = Tfrozen
+	    print*, 'frozen',Pi,Ti
+            call petsub(nnew,itersum,ione)
+	    Pi = Pisave
+	    Ti = Tisave
+	   end if
+	   gibbs = func(nnew)
+	   go to 10
+	  end if
           call petsub(nnew,itersum,ione)
 10        tlast = Ti
           itertot = itertot + itersum

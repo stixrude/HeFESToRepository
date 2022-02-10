@@ -45,11 +45,17 @@ C  Einstein limit of the width of the Optic Continuum
         return
 
 30      continue                                  !  Sin
+        if (x .gt. xamax) then
+	 Heat = (12.*pirad*pirad*pirad*pirad/15.)/(x*x*x)*sfac 
+     &                         + asin*bsin*(bsin-1)*x**(1-bsin)
+	 return
+	end if
+        if (x .lt. xamin) then
+	 Heat = 1.0 - (1.0 - sin1(imin))/xamin**2*x*x
+	 return
+	end if
         call neville(xa(klo),sin1(klo),mint,x,y,dy)
         Heat = y
-        if (x .gt. xamax) Heat = (12.*pirad*pirad*pirad*pirad/15.)/(x*x*x)*sfac 
-     &                         + asin*bsin*(bsin-1)*x**(1-bsin)
-        if (x .lt. xamin) Heat = 1.0 - (1.0 - sin1(imin))/xamin**2*x*x
         return
 
 40      continue                                  !  Optic Continuum

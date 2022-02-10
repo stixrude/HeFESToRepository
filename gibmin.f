@@ -8,7 +8,7 @@
         logical add,valid
 
 	integer itersum,i,icase,ispec1,ispec2,iter,k,lph1,lph2,lphrep1,lphrep2,ndim
-	integer nvet,nvep
+	integer nvet,nvep,ires
 	double precision fret,apar,dhdpmol,dhdtmol,dvdpmol,dsdtmol,ehugo,feas,freths,fretnl,fretsav,ftol,phugo
 	double precision Pi,qual,qualsav,vtarg,starg,Ti,tlast,vhugo,vsum,wmagg,Tfeas,Pfeas,func,yy,val
         double precision nnew(nspecp)
@@ -60,16 +60,17 @@ c         write(31,*) (nnew(i),i=1,nnull)
 	if (chcalc) call Plfeas(Pfeas,nnew)
 	if (chcalc) write(31,*) 'Back from Plfeas = ',Pfeas
 	if (adcalc) write(31,*) 'Back from Tlfeas = ',Tfeas
-	call nlmin_L(nnew,ndim,fretnl,iter)
+	call nlmin_L(nnew,ndim,fretnl,iter,ires)
 	fret = fretnl
         itersum = itersum + iter
         call nform(nnew,n,n1,q2,nspec,nnull)
 	if (adcalc) Ti = nnew(nnull+nvet)
 	if (chcalc) Pi = nnew(nnull+nvep)
         write(31,'(a6,5i5,99f12.5)') 'gibmn',iter,nnull,nvep,nvet,ndim,Pi,Ti,(n(i),i=1,nspec)
+c        write(31,'(a6,5i5,99f12.5)') 'vspec',iter,nnull,nvep,nvet,ndim,Pi,Ti,(vspeca(i),i=1,nspec)
 	
 	write(31,*) 'Calling ssave from gibmin 1'
-	call ssave(fret,qual,nnew,fretsav,qualsav,absentsav,absentssav,nnewsav,ftol,succes)
+	call ssave(fret,qual,nnew,fretsav,qualsav,absentsav,absentssav,nnewsav,ftol,succes,ires)
 
         call tracesub(n,iphase,mphase,nspec,nph,absent,absents,add)
         if (add) then
@@ -86,7 +87,7 @@ c        itersum = itersum + iter
 	ftol = 1.e-5
 
 	write(31,*) 'Calling ssave from gibmin 2'
-        call ssave(fret,qual,nnew,fretsav,qualsav,absentsav,absentssav,nnewsav,ftol,succes)
+        call ssave(fret,qual,nnew,fretsav,qualsav,absentsav,absentssav,nnewsav,ftol,succes,ires)
 
 	fret = fretsav
 	qualsav = qual

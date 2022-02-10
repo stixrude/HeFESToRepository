@@ -59,6 +59,7 @@ c	pig = 0.001*fn*Rgas*Ti/Vi
 	 Fxs = Fxs + tee*aliq(i+1,lineart)*f**i/dfac(i)
 11	continue
 	Ftot = 1000.*Fxs + 1000.*Fel + Fig
+c	print*, 'in therml',ispec,Fxs,Fel,Fig/1000.
 
 	Sxs = 0.
 	do 2 i=0,nobm

@@ -26,14 +26,14 @@ c	print*, 'nlmin',nconstr,ndim
                  do 1 j=1,nspecp
 1                da(i,j) = 0.
      
-C---> Constrain the amount of each present species to be greater than zero
         nconstr = 0
-        do 22 ispec=1,nspec
-         if (absents(ispec)) go to 22
-         nconstr = nconstr + 1
-         da(ispec,nconstr) = -1.0
-22      continue
-        go to 23
+C---> Constrain the amount of each present species to be greater than zero
+c        do 22 ispec=1,nspec
+c         if (absents(ispec)) go to 22
+c         nconstr = nconstr + 1
+c         da(ispec,nconstr) = -1.0
+c22      continue
+c        go to 23
 C<---
 C  Set inequality constraints on N_jk (j components, k sites)
             valid = validc(vsum,x,da,nconstr)

@@ -6,6 +6,7 @@
 	integer iter,int,nvet,nvep
 	double precision tlast,vtarg,starg,phugo,vhugo,ehugo,dvdpmol,dsdtmol,dhdpmol,dhdtmol,wmagg
 	double precision Tfeas,val,nnew(nspecp),func,To,x(nspecp),sfunc
+	double precision Tspin
 	double precision, parameter :: Tsmall=1.e-5
 	integer, parameter :: itermax=5
         common /tfindc/ tlast,vtarg,starg,phugo,vhugo,ehugo,dvdpmol,dsdtmol,dhdpmol,dhdtmol,wmagg,chcalc,adcalc,hucalc,nvet,nvep
@@ -21,7 +22,7 @@
 	val = func(nnew)
 
 	Tfeas = log(To) + (starg*wmagg - sfunc(x))/(To*dsdtmol)
-	Tfeas = exp(Tfeas)
+	Tfeas = min(exp(Tfeas),Tspin(int))
 c	write(31,*) 'Tfeas = ',Tfeas,To,sfunc(x),starg,wmagg,starg*wmagg,dsdtmol
 	iter = iter + 1
 	if (iter .gt. itermax) then

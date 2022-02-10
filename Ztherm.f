@@ -22,6 +22,11 @@
         if (wdav .ne. wd1/3.) aniso = .true.
         if (wsav .ne. ws1/3.) aniso = .true.
         if (qe .eq. 0. .and. qo .eq. 0.) su = 1.
+C  If qo = 0, then assign all non-Einstein modes to the acoustic band.  This may not work for Ztherm.
+        if (qo .eq. 0.) then
+         su = 1./(1. - qe)
+        end if
+
         zetad = 0.
         zetad1 = 0.
         zetad2 = 0.

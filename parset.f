@@ -82,7 +82,9 @@ c       par = parold*(1.0 + dparc/100.)
          if (dparc .ne. 0.0) print 100, 'Sensitivity Testing',parold,par,dpar
         end if
         gam = par
-	
+
+	if (apar(ispec,51) .ne. 0.) return
+
 C  Computed quantities
 
 C  Volume limits set by real vibrational frequency
@@ -138,36 +140,36 @@ C  Identify domain of positive bulk modulus
 	vspupp = 1.d+15
 	vsplow = 1.d-15
 	if (detsp .lt. 0.) then
-C  No roots: domain of positive bulk modulus is unbounded.
+C  No roots: domain of positive bulk modulus is unbounded (does not occur for BM3).
 	 go to 20
 	end if
 	if (asp .eq. 0.) then
-C  Only one root
+C  Only one root, which has a negative value (f1=-1/7), and therefore corresponds to an upper bound on the volume
 	 f1 = -c/bsp
-	 if (f1 .gt. 0.) vsplow = Vo*(2.*f1 + 1.)**(-3./2.)
-	 if (f1 .lt. 0.) vspupp = Vo*(2.*f1 + 1.)**(-3./2.)
+	 vspupp = Vo*(2.*f1 + 1.)**(-3./2.)
 	 go to 20
 	end if
 C  Two roots 
 	f1 = (-bsp - sqrt(detsp))/(2.*asp)
 	f2 = (-bsp + sqrt(detsp))/(2.*asp)
-	if (max(f2,f1) .lt. 0.) then
-C  Only an upper bound
+	if (max(f1,f2) .lt. 0.) then
+C  Only an upper bound (Kop>4)
 	 vspupp = Vo*(2.*max(f1,f2) + 1.)**(-3./2.)
 	 go to 20
 	end if
 	if (min(f1,f2) .gt. 0.) then
-C  Only a lower bound
+C  Only a lower bound (does not occur for BM3).
 	 vsplow = Vo*(2.*min(f1,f2) + 1.)**(-3./2.)
 	 go to 20
 	end if
+C  One positive root and one negative root: upper and lower bounds (Kop<4)
 	vspupp = Vo*(2.*min(f1,f2) + 1.)**(-3./2.)
 	vsplow = Vo*(2.*max(f1,f2) + 1.)**(-3./2.)
 20	continue
 	apar(ispec,53) = max(vsplow,Vo/10.) + vsmall
 	apar(ispec,54) = min(vspupp,Vo*10.) - vsmall
-c	write(31,*) 'V bounds',ispec,apar(ispec,51),apar(ispec,52),apar(ispec,53),apar(ispec,54),
-c     &   a,b,det,vlow,vupp,asp,bsp,detsp,vsplow,vspupp
+	write(31,*) 'V bounds',ispec,Kop,f1,f2,apar(ispec,51),apar(ispec,52),apar(ispec,53),apar(ispec,54),
+     &   a,b,det,vlow,vupp,asp,bsp,detsp,vsplow,vspupp
 
         return
 100     format(a19,4f13.5)

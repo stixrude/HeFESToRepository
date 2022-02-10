@@ -1,4 +1,4 @@
-        subroutine ssave(fret,qual,nnew,fretsav,qualsav,absentsav,absentssav,nnewsav,ftol,succes)
+        subroutine ssave(fret,qual,nnew,fretsav,qualsav,absentsav,absentssav,nnewsav,ftol,succes,ires)
 
         include 'P1'
 	include 'numpar.inc'
@@ -6,7 +6,7 @@
         include 'absent.inc'
         include 'const.inc'
 
-	integer i
+	integer i,ires
 	double precision fret,qual,fretsav,qualsav,ftol,vsum
         double precision nnew(nspecp)
         double precision nnewsav(nspecp)
@@ -19,6 +19,10 @@
 	  return
 	 end if
 	end if
+c	if (ires .lt. 0) then
+c	 write(31,*) 'ssave returning without considering invalid solution',fret,fretsav,qual,qualsav,nnew(nnull+1),ftol,ires
+c	 return
+c	end if
         call qcalc(nnew,qual)
 
 	write(31,*) 'ssave fret,fretsav,qual,qualsav',fret,fretsav,qual,qualsav

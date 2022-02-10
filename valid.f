@@ -22,14 +22,14 @@ C  Determine validity of solution: amount of each component on each site in each
         vsum = 0.
 
 C---> Constrain the amount of each present species to be greater than zero
-        do 21 ispec=1,nspec
-         if (absents(ispec)) go to 21
-         if (n(ispec) .lt. -vsmall) then
-          valid = .false.
-          vsum = vsum + 0.5*(abs(n(ispec)) - n(ispec))
-         end if
-21      continue
-	return
+c        do 21 ispec=1,nspec
+c         if (absents(ispec)) go to 21
+c         if (n(ispec) .lt. -vsmall) then
+c          valid = .false.
+c          vsum = vsum + 0.5*(abs(n(ispec)) - n(ispec))
+c         end if
+c21      continue
+c	return
 C<---
 
 	do 10 iph=1,nph

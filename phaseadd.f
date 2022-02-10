@@ -8,7 +8,7 @@
 	include 'const.inc'
 
 	integer i,ibv,ic,ied,iguess,iph,ispec,iter,itermin,izp,jspec,m,ncoph,ncph,ncsph,ndim,nnullsv,nvet,nvep,k,ispec1,ispec2
-	integer itersum,inull,igmin,imin
+	integer itersum,inull,igmin,imin,ires
 	double precision affmin,apar,be,dhdpmol,dhdtmol,dvdpmol,dsdtmol,ehugo,fn,fo,fret,fretmin,gam,ge,go,gop,got,htl,phugo
 	double precision Pi,q2a2,qe1,qe2,qe3,qe4,qo,qual,qualmin,vtarg,starg,Ti,tlast,to,vhugo,vo,vsum,wd1,wd2,wd3
 	double precision we1,we2,we3,we4,wm,wol,wou,ws1,ws2,ws3,zu,wmagg,vec1(nspecp),vec2(nspecp),test,dnrm2,ddot
@@ -141,14 +141,16 @@ C  Avoid redundant affinity calculation
            if (i .eq. iguess) n(iphase(lph)+i-1) = 1.0 - float(m-1)*ssmall
 18         continue
           if (iguess .eq. m+1) then
-           do 161 i=1,m-1
+           do 161 i=1,m
 161          n(iphase(lph)+i-1) = 1./float(m)
           end if
+c	  write(31,*) iguess,(n(ispec),ispec=iphase(lph),iphase(lph)+mphase(lph)-1)
           if (m .eq. 1) n(ispec) = 1.0
           iter = 0
 	  call newfrm(q2,n,n1,nnew,nspec,nnull,absents)
 	  fretguess = func(nnew)
-c	  write(31,*) iguess,(nnew(inull),inull=1,nnull),fretguess/fn
+c	  write(31,*) iguess,(nnew(inull),inull=1,nnull),(n(ispec),ispec=iphase(lph),iphase(lph)+mphase(lph)-1)
+c     &     ,(n1(ispec),ispec=iphase(lph),iphase(lph)+mphase(lph)-1),fretguess/fn
 	  fretgmin = min(fretgmin,fretguess)
 	  if (fretgmin .eq. fretguess) igmin = iguess
 	  do 62 inull=1,nnull
@@ -156,7 +158,7 @@ c	  write(31,*) iguess,(nnew(inull),inull=1,nnull),fretguess/fn
 	   ub(inull) = max(ub(inull),nnew(inull))
 62	  continue
 19	continue
-c	write(31,*) 'Bounds',(lb(inull),inull=1,nnull),(ub(inull),inull=1,nnull),fretgmin/fn,iguess
+c	write(31,*) 'Bounds',(lb(inull),inull=1,nnull),(ub(inull),inull=1,nnull),fretgmin/fn
 
          do 9 iguess=1,m+1
           do 8 i=1,m
@@ -177,7 +179,7 @@ c	   nnew(ndim) = Ti
 c	  end if
 	  if (adcalc) tfix = .true.
 	  if (chcalc) pfix = .true.
-          call nlmin_L(nnew,ndim,fret,iter)
+          call nlmin_L(nnew,ndim,fret,iter,ires)
 c	  if (adcalc) Ti = nnew(ndim)
           call nform(nnew,n,n1,q2,nspec,nnull)
 	  call qcalc(nnew,qual)
@@ -209,7 +211,7 @@ c	  write(31,*) lph,iguess,iter,fret,fretmin,qual,qualmin,ndim,(n(i),i=iphase(lp
 C  Avoid adding phases of redundant composition
          write(31,'(i3,1x,a5,99f12.4)') lph,phname(lph),affin(lph),
      &    (n(i),i=iphase(lph),iphase(lph)+mphase(lph)-2),qualmin,real(itermin),real(itersum),real(imin)
-c	 if (abs(fretmin - fretgmin) .gt. 1.e-6) write(31,*) 'Guess failed',fretmin/fn,fretgmin/fn,(fretgmin - fretmin)/fn,igmin,imin
+	 if (abs(fretmin - fretgmin) .gt. 1.e-6) write(31,*) 'Guess failed',fretmin/fn,fretgmin/fn,(fretgmin - fretmin)/fn,igmin,imin
 	 if (exsolve) then
 	  k = 0
           do 24 ispec1=iphase(lph-1),iphase(lph-1)+mphase(lph-1)-1

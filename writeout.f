@@ -239,7 +239,7 @@ c         write(31,'(a11,105f8.4)') 'Chem. Pots.',(cpa(i)/1000.,i=1,nspec)
 c        if (iprint .ge. 1) then
         if (iprint .eq. 1) then
          write(31,'(/,a)') 'Phase equilibria'
-         write(31,'(a6,a8,a8,105a9)') 'Pi','depth','Ti',(sname(ispec)(1:8),ispec=1,nspec)
+         write(31,'(a7,a9,a9,105a12)') 'Pi','depth','Ti',(sname(ispec)(1:8),ispec=1,nspec)
          write(31,700) Pi,depth(Pi),Ti,(nprint(i),i=1,nspec),
      &    gibbs/1000.,qual
 	 do 31 lph1=1,nph-1

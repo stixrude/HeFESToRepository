@@ -40,7 +40,7 @@
         open(7,file='log',status='unknown')
         open(31,file='qout',status='unknown')
         open(71,file='landau',status='unknown')
-        write(71,'(a5,7a12)') 'Species','Temperature','Gconf','Sconf','Vconf','Qorder','Tc'
+c        write(71,'(a5,7a12)') 'Species','Temperature','Gconf','Sconf','Vconf','Qorder','Tc'
         write(31,*) 'Echo input'
         write(31,*) '-----------------Begin control file-----------------'
         do 99 i=1,lmax
@@ -140,7 +140,7 @@ c        read(51,'(a2,6x,2f12.5,i5)') xatom,binit(i),bfinal(i),nbulk
 c         call formula(ispec,nc,nsitsp(ispec),lox,comp,s,r)
 c	 rewind 1
          call cformula(ispec,nc,nsitsp(ispec),lox,comp,s,r,rep)
-         do 31 i=1,npar
+         do 31 i=1,nparp
 31       apar(ispec,i) = 0.
 	 apar(ispec,42) = 2.
          do 3 i=1,npar

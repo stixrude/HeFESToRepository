@@ -5,7 +5,7 @@
         include 'const.inc'
 
         double precision Ti,fn,zu,wd1,wd2,wd3,ws1,ws2,ws3,wou,wol,we1,we2,we3,we4,qe1,qe2,qe3,qe4,do,qe,qo
-        double precision su,wdav,wo,wsav,Heat,Cd,Ce,Co,Cs
+        double precision su,wdav,wo,wsav,Heat,Cd,Ce,Co,Cs,hs1,hs2,hs3,he1,he2,ho
         logical aniso
         aniso = .false.
 
@@ -22,6 +22,10 @@
         if (wdav .ne. wd1/3.) aniso = .true.
         if (wsav .ne. ws1/3.) aniso = .true.
         if (qe .eq. 0. .and. qo .eq. 0.) su = 1.
+C  If qo = 0, then assign all non-Einstein modes to the acoustic band
+	if (qo .eq. 0.) then
+	 su = 1./(1. - qe)
+	end if
 
 C  Debye
         Cd  = 1./su*Heat(wd1/Ti,do,1)

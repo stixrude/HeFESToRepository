@@ -166,7 +166,6 @@ c        Ftho = 3.*fn*Rgas*To*htl*(log(thet/To) - 1./3.)
         pel = 0.001*0.5*ge*beta*(Ti*Ti - To*To)/Vi
 	qel = 0.0
 	Kel = pel*(1. - ge - qel)
-c	print*, 'in therm',Ti,Vi,pel,Kel
         Ftot = 1000.*Fo + Fbm + Fth - Ftho + Fpv + Fel
         ent = (uth - Fth)/Ti + beta*Ti
 
@@ -310,7 +309,6 @@ c       print*, Pi,Ti,b0,b1,Gsh
         dlnvdebdlnv = 2./3.*(Vdeb/Vsc)**3*dlnvsdlnv + 1./3.*(Vdeb/Vpc)**3*dlnvpdlnv
         gamdeb = -(dlnvdebdlnv - 1./3.)
 
-c	print*, 'Entropy',ispec,(uth-Fth)/Ti,beta*Ti,slan
 c	write(31,*) 'in therm',ispec,Pi,Ti,Vi,Ks
 
         return
