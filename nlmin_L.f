@@ -66,7 +66,10 @@ c	write(31,*) 'T Bounds',lb(ndim),ub(ndim),Tspin(ncall),ndim,nvet,adcalc
 1                da(i,j) = 0.
      
 	nconstr = 0
+c	go to 24
 C---> Constrain the amount of each present species to be greater than zero
+C     Also modify the subroutine valid.f to invalidate solutions with n_i<0.
+	if (ncall .eq. 0) write(31,*) 'Constraining all species amounts to be positive definite'
 	do 22 ispec=1,nspec
 	 if (absents(ispec)) go to 22
 	 nconstr = nconstr + 1
@@ -75,6 +78,8 @@ C---> Constrain the amount of each present species to be greater than zero
 	go to 23
 C<---
 C--->  Constrain the total amount of each component on each site to be greater than zero
+24	continue
+	if (ncall .eq. 0) write(31,*) 'Constraining amount of each component on each site to be positive definite'
             valid = validc(vsum,x,da,nconstr)
 c	write(31,*) 'nlmin nconstr after validc = ',nconstr
 
@@ -84,6 +89,10 @@ C  This is necessary to prevent a large negative amount of one member of the pai
 	 if (absents(ispec)) go to 21
 	 iph = lphase(ispec)
          if (ispec  .ge. iophase(iph) .and. ispec .le. iophase(iph)+mophase(iph)-1) then
+	  nconstr = nconstr+1
+	  da(ispec,nconstr) = -1.0
+	 end if
+         if (iferric(ispec)) then
 	  nconstr = nconstr+1
 	  da(ispec,nconstr) = -1.0
 	 end if

@@ -92,6 +92,10 @@ c         thet = theo*exp(-(gammo-gammo*qo)*log(Vi/Vo) - (gamma-gammo))
      &                     we1,we2,we3,we4,qe1,qe2,qe3,qe4,gamma)/Cvn
         zeto = Ztherm(To,fn,zu,wd1,wd2,wd3,ws1,ws2,ws3,wou,wol,
      &                     we1,we2,we3,we4,qe1,qe2,qe3,qe4,gamma)/Cvon
+	if (Ti .le. 0.) then
+	 zeta = 0.
+	 zeto = 0.
+	end if
 c       qp = 0.0
         a1 = 1.5*(Kop - 4.)
         a2 = 0.0
@@ -158,7 +162,7 @@ c        Ftho = 3.*fn*Rgas*To*htl*(log(thet/To) - 1./3.)
         Fel = -(beta/2.)*(Ti*Ti - To*To)
         Cvel = beta*Ti
         Cvelo = beta*To
-        gamma = (gamma*Cv + ge*Cvel)/(Cv + Cvel)
+        if (Ti .gt. 0.) gamma = (gamma*Cv + ge*Cvel)/(Cv + Cvel)
         Cv = Cv + Cvel
         Cvo = Cvo + Cvelo
         Cvn = Cv/(3.*fn*Rgas)
@@ -168,6 +172,7 @@ c        Ftho = 3.*fn*Rgas*To*htl*(log(thet/To) - 1./3.)
 	Kel = pel*(1. - ge - qel)
         Ftot = 1000.*Fo + Fbm + Fth - Ftho + Fpv + Fel
         ent = (uth - Fth)/Ti + beta*Ti
+	if (Ti .le. 0.) ent = 0.
 
         K = Kc + Kth + Kel
         fac = gamma*gamma*Cv*Ti/(1000.*Vi*K)
@@ -221,7 +226,7 @@ C Landau contributions
         K = Vi/volnl/(1./K + betlan)
         alp = Volnl/Vi*(alp + alplan)
         Cv = Cp - 1000.*Ti*Vi*alp**2*K
-        gamma = 1000.*Vi*alp*K/Cv
+c        gamma = 1000.*Vi*alp*K/Cv
         Ks = K*(1. + alp*gamma*Ti)
 c        write(71,'(i5,60f12.5)') ispec,Ti,glan/1000.,slan,vlan,qorder,Tc,Helm/1000.,Helmlan/1000.
 c     &   ,flan/1000.,1000.*Pi*vlan,alplan,betlan,cplan,Ftot/1000.,gamma

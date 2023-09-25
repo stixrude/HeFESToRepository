@@ -41,18 +41,21 @@
 
 c	print '(a11,i5,99f12.5)', 'x1a volumes',ispec,(x1a(jj),jj=1,47)
         if (Ti .lt. Tsmall) then
-	 print*, 'WARNING: Temperature is less than Tsmall',Ti
-	 write(31,*) 'WARNING: Temperature is less than Tsmall',Ti
-	 Ti = Tsmall
+c	 print*, 'WARNING: Temperature is less than Tsmall',Ti
+c	 write(31,*) 'WARNING: Temperature is less than Tsmall',Ti
+c	 Ti = Tsmall
 	end if
         x1 = Vo
         if (x1a(ispec) .gt. xsmall) x1 = x1a(ispec)
 c	print*, 'gspec',htl
-	if (htl .eq. 0.) then
-         vol = volume(ispec,x1)
-	else
-	 vol = volumel(ispec,x1)
-	end if
+c	if (htl .eq. 0.) then
+c         vol = volume(ispec,x1)
+c	else
+c	 vol = volumel(ispec,x1)
+c	end if
+	if (htl .eq. 0.) vol = volume(ispec,x1)
+c	if (htl .eq. 1.) vol = volumel(ispec,x1)
+	if (htl .ne. 0. .and. htl .ne. 2.) vol = volumel(ispec,x1)
         if (vol .gt. xsmall .and. vol .lt. 10.*Vo) x1a(ispec) = vol
 c	print '(a11,i5,99f12.5)', 'x1a vol    ',ispec,vol
 c	print '(a11,i5,99f12.5)', 'x1a after v',ispec,(x1a(jj),jj=1,47)
@@ -78,19 +81,30 @@ c       print*, 'gspec',Pi,Ti,vol
 	 if (htl .eq. 0.) then
           call therm(ispec,vol,volnl,Cp,Cv,gamma,K,Ks,alp,Ftot,ph,ent,deltas,tcal,
      &               zeta,Gsh,uth,uto,thet,qq,etas,dGdT,pzp,Vdeb,gamdeb)
-	 else
+	 end if
+c	 if (htl .eq. 1.) then
+	 if (htl .ne. 0. .and. htl .ne. 2.) then
           call therml(ispec,vol,volnl,Cp,Cv,gamma,K,Ks,alp,Ftot,ph,ent,deltas,tcal,
      &               zeta,Gsh,uth,uto,thet,qq,etas,dGdT,pzp,Sel,Eel,Pel,Cvel,Eig,Pig,P,E)
 	 end if
+	 if (htl .eq. 2.) then
+          call thermg(ispec,vol,volnl,Cp,Cv,gamma,K,Ks,alp,Ftot,ph,ent,deltas,tcal,
+     &               zeta,Gsh,uth,uto,thet,qq,etas,dGdT,pzp,Sel,Eel,Pel,Cvel,Eig,Pig,P,E)
+	 end if
         end if
-	if (htl .eq. 0.) then
-         call Ftotsub(ispec,volnl,Ftot)
-	else
-	 call Ftotsubl(ispec,volnl,Ftot)
-	end if
+c	if (htl .eq. 0.) then
+c         call Ftotsub(ispec,volnl,Ftot)
+c	else
+c	 call Ftotsubl(ispec,volnl,Ftot)
+c	end if
+	if (htl .eq. 0.) call Ftotsub(ispec,volnl,Ftot)
+c	if (htl .eq. 1)  call Ftotsubl(ispec,volnl,Ftot)
+	if (htl .ne. 0. .and. htl .ne. 2.)  call Ftotsubl(ispec,volnl,Ftot)
+	if (htl .eq. 2)  call Ftotsubg(ispec,volnl,Ftot)
 
 c	volve = vol
         gspec = Ftot
+c	print*, 'in gspec',Ftot,Cp,Cv
 
         return
         end

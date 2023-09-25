@@ -243,9 +243,10 @@ c	print*, 'after 266'
 59	continue
 	if (icfe .eq. 0) go to 541
 	do 54 lph=1,nph
+         if (mphase(lph) .lt. 2) go to 54
 	 do 55 ispec=iphase(lph),iphase(lph)+mphase(lph)-2
 	  do 56 jspec=ispec+1,iphase(lph)+mphase(lph)-1
-	   do 57 k=1,nsitsp(lph)
+	   do 57 k=1,nsitsp(ispec)
 	    if (r(icfe,ispec,k) .eq. 0.) go to 57
 C  Ferric iron on the first site of hepv and hlpv are both high spin (the large, dodecahedral, 'Mg' site on which Fe is high spin throughout the mantle in FeSiO3 and FeFeO3).  Following assumes that hlpv follows hepv in the control file
 C  Ferric iron on the first site of mag and on the third site of mag.  Assume no disorder on the first (tetrahedral) ferric site.  Following assumes that mag follows wu in the control file
@@ -253,7 +254,8 @@ C  Ferric iron on the first site of mag and on the third site of mag.  Assume no
 	    if (sname(ispec) .eq. 'hppv' .and. sname(jspec) .eq. 'lppv' .and. k .eq. 1) go to 57
 	    if (sname(ispec) .eq. 'hepv' .and. sname(jspec) .eq. 'fapv' .and. k .eq. 1) go to 57
 	    if (sname(ispec) .eq. 'hlpv' .and. sname(jspec) .eq. 'fapv' .and. k .eq. 1) go to 57
-c	    if (sname(ispec) .eq. 'wu  ' .and. sname(jspec) .eq. 'mag ' .and. k .eq. 2) go to 57
+	    if (sname(ispec) .eq. 'wu  ' .and. sname(jspec) .eq. 'mag ' .and. k .eq. 3) go to 57
+	    if (sname(ispec) .eq. 'al  ' .and. sname(jspec) .eq. 'skag' .and. k .eq. 1) go to 57
 c	    if (r(icfe,ispec,k) .eq. r(icfe,jspec,k)) then
 	    if (r(icfe,ispec,k) .ne. 0. .and. r(icfe,jspec,k) .ne. 0.) then
 	     iastate(ispec,jspec,k) = .true.
@@ -266,6 +268,26 @@ c	    if (r(icfe,ispec,k) .eq. r(icfe,jspec,k)) then
 55	 continue
 54	continue
 541	continue
+
+	do 71 ispec=1,nspec
+	 iferric(ispec) = .false.
+	 if (sname(ispec) .eq. 'mag') then
+	  iferric(ispec) = .true.
+	  write(31,*) 'Found unique ferric  species in phase',ispec,sname(ispec)
+	 end if
+	 if (sname(ispec) .eq. 'fepv') then
+	  iferric(ispec) = .true.
+	  write(31,*) 'Found unique ferrous species in phase',ispec,sname(ispec)
+	 end if
+	 if (sname(ispec) .eq. 'smag') then
+	  iferric(ispec) = .true.
+	  write(31,*) 'Found unique ferric  species in phase',ispec,sname(ispec)
+	 end if
+	 if (sname(ispec) .eq. 'acm') then
+	  iferric(ispec) = .true.
+	  write(31,*) 'Found unique ferric  species in phase',ispec,sname(ispec)
+	 end if
+71	continue
 
 C  Following assumes that the first site is completely ordered in the end-member and that it does not mix with any other 
 C  components of any other species on that site.
@@ -300,7 +322,6 @@ C  Assumes that the species with the extra site is not the first species of the 
 29       continue
          nsite(lph) = nmin
 28      continue
-	print*, 'number of sites in phase 3 (opx)',nsite(3)
          
         nco = nc
         call sform(s,b,n1,q1,q2,nspec,nco,nc,ncs,nnull,nnulls,absents)

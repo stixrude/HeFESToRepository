@@ -35,7 +35,7 @@ nlfeas.o nlfeasopt.o myfeas.o myconfeas.o \
 zeroin.o zeroint.o nlmin_V.o myvol.o \
 tlindeman.o asqrt.o sfunc.o dsfunc.o myvoll.o nlmin_VL.o \
 Tspin.o vfunc.o dvfunc.o Prange.o Tlfeas.o Plfeas.o hev.o stishtran.o thermlel.o thermlig.o \
-dfac.o dsort.o dqagse.o d1mach.o dqelg.o dqk21.o dqpsrt.o
+dfac.o dsort.o dqagse.o d1mach.o dqelg.o dqk21.o dqpsrt.o hillert.o thermg.o Ftotsubg.o
 
 #  Get LAPACK and BLAS
 LIB1 = -framework Accelerate

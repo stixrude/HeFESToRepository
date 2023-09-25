@@ -25,6 +25,7 @@
         logical adiabat,chcalc,adcalc,hucalc,tfix,pfix,frozen
         logical isochor,sfix,vofix,cvfix
         logical spinod(nspecp),spinph(nphasep)
+	double precision, parameter :: Tsmall=1.e-5
         common /names/ phname,sname
         common /chor/ ispec,isochor
         common /state/ apar(nspecp,nparp),Ti,Pi
@@ -68,9 +69,9 @@ c     &                 superad,nPREM,ns,adiabat,chcalc,adcalc,hucalc
 	if (chcalc) Pi = superad
 	starg = 0.0
 	vtarg = 1.0
-	icalc = 0
 	call cpu_time(start)
         do 3 ibulk = 1,nbulk+1
+	 icalc = 0
          do 31 ic = 1,nco
 31       b(ic) = binit(ic) + dbulk(ic)*float(ibulk - 1)
          if (ibulk .gt. 1) then
@@ -105,7 +106,10 @@ c     &                 superad,nPREM,ns,adiabat,chcalc,adcalc,hucalc
           if (nbulk .eq. 0) print*, jt,ip
           if (.not. chcalc) Pi = P1 + dP*float(ip-1)
 	  if (chcalc) vtarg = P1 + dP*float(ip-1)
-          if (.not. adcalc) Ti = T1 + dT*float(jt-1)
+          if (.not. adcalc) then
+	   Ti = T1 + dT*float(jt-1)
+	   if (Ti .lt. 0.) Ti = -Tsmall
+	  end if
 	  if (adcalc) starg = T1 + dT*float(jt-1)
           iphyflag = 1
           call PTfind(Pi,Ti,adiabat,adcalc,hucalc,superad)
@@ -158,6 +162,26 @@ c         if (jt .eq. 1) then
 	print*, 'time for main loop = ',gmainloop
         print '(a34,5i12)', 'Number of iterations, per point = '
      &    ,itertot,nint(float(itertot)/float((nbulk+1)*(nP+1)*(nT+1))),nbulk+1,nP+1,nT+1
+
+	close (7)		! file name: log
+	close (31)		! file name: qout
+	close (56)		! contains physical properties, including seismic wave velocities
+	close (57)		! contains physical properties of the assemblage
+	close (58)		! contians physical properties of the assemblage, including Voigt-Reuss bounds
+	close (59)		! contains physical properties of the assemblage, including adiabatic and isothermal (frozen) bulk moduli
+	close (61)		! contains density of each stable phase
+	close (62)		! contains bulk sound velocity of each stable phase
+	close (63)		! contains shear wave velocity of each stable phase
+	close (64)		! contains longitudinal wave velocity of each stable phase
+	close (65)		! contains formula mass of each stable phase
+	close (66)		! contains phase proportions (atomic fraction)
+	close (67)		! contains phase proportions (volume fraction)
+	close (68)		! contains volume of each stable phase
+	close (69)		! contains physical properties of the assemblage, including the Clapeyron slope
+	close (89)		! contains properties of individual species
+	close (97)		! contains information related to the progress of Gibbs free energy minimization
+	close (99)		! contains species amounts (n_i vector)
+	close (661)		! contains derivative of the phase amount with respect to pressure
 
         stop 
 700     format(f6.2,f8.2,f8.2,105f9.5)

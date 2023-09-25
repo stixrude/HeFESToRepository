@@ -15,7 +15,7 @@
 	logical chcalc,adcalc,hucalc,adcalcsav,chcalcsav
         double precision nnew(nspecp)
         double precision nnewsav(nspecp)
-	double precision bold(ncompp)
+	double precision bold(ncompp),cpcomplocal(nspecp)
         integer jphase(nspecp),nvet,nvep
         logical absentsav(nspecp),absentssav(nspecp)
         logical absenttmp(nspecp),absentstmp(nspecp)
@@ -136,10 +136,15 @@ C  Check whether removal of spinodal instability generates infeasible solution a
 83	continue
 84	continue
         call gibmin(nnew,fret,iter)
+c        call gibmin(nnew,fret,fretsav,qualsav,absentsav,absentssav,nnewsav,itersum)
+        write(31,*) 'back from gibmin absents   ',(absents(ispec),ispec=1,nspec)
+        write(31,*) 'back from gibmin absentssav',(absentssav(ispec),ispec=1,nspec)
         itersum = itersum + iter
 	write(31,*) 'Calling ssave from petsub 1'
         call ssave(fret,qual,nnew,fretsav,qualsav,absentsav,absentssav,nnewsav,ftol,succes,ires)
         call writeout(nnew,qual,itersum,-iprint)
+        write(31,*) 'absents   ',(absents(ispec),ispec=1,nspec)
+        write(31,*) 'absentssav',(absentssav(ispec),ispec=1,nspec)
 
         write(31,'(/,a,2f12.5)') 'Initial restore',Pi,Ti
 	call lagscomp(s,n,lags,lagc,gspeca,lphase,nspec,nco,absent,absents)
@@ -150,6 +155,7 @@ C  Check whether removal of spinodal instability generates infeasible solution a
 	 call sform(s,b,n1,q1,q2,nspec,nco,nc,ncs,nnull,nnulls,absents)
          call newfrm(q2,n,n1,nnew,nspec,nnull,absents)
          call gibmin(nnew,fret,iter)
+c         call gibmin(nnew,fret,fretsav,qualsav,absentsav,absentssav,nnewsav,itersum)
          itersum = itersum + iter
 	 write(31,*) 'Calling ssave from petsub 2'
          call ssave(fret,qual,nnew,fretsav,qualsav,absentsav,absentssav,nnewsav,ftol,succes,ires)
@@ -179,6 +185,7 @@ C  Check for phase addition or subtraction
 	 adcalc = adcalcsav
 	 chcalc = chcalcsav
 c	write(31,*) 'Back from phaseadd',Ti,nnull,nnew(nnull),nnew(nnull+nvet),nnewsav(nnull),nnewsav(nnull+nvet),add,Pi
+	write(31,*) 'Back from phaseadd',add,(absents(ispec),ispec=1,nspec)
          if (.not. add) go to 12
 	 call newfrm3(s,dn,n,nspec,nc,ncs)
          call sform(s,b,n1,q1,q2,nspec,nco,nc,ncs,nnull,nnulls,absents)
@@ -244,6 +251,7 @@ C  Remove phases one by one and check for minimum energy solution
            go to 102
           end if
           call gibmin(nnew,fret,iter)
+c          call gibmin(nnew,fret,fretsav,qualsav,absentsav,absentssav,nnewsav,itersum)
           itersum = itersum + iter
           if (.not. valid(vsum,nnew)) then
            write(31,*) 'WARNING: Solution for',jphase(lph),' absent is invalid',vsum
@@ -299,6 +307,7 @@ C  Remove phases one by one and check for minimum energy solution
 C  Phase Rule Not Violated
 101      continue
          call gibmin(nnew,fret,iter)
+c         call gibmin(nnew,fret,fretsav,qualsav,absentsav,absentssav,nnewsav,itersum)
          itersum = itersum + iter
 	 write(31,*) 'Calling ssave from petsub 3'
          call ssave(fret,qual,nnew,fretsav,qualsav,absentsav,absentssav,nnewsav,ftol,succes,ires)
@@ -315,6 +324,7 @@ C  Phase Rule Not Violated
           call sform(s,b,n1,q1,q2,nspec,nco,nc,ncs,nnull,nnulls,absents)
           call newfrm(q2,n,n1,nnew,nspec,nnull,absents)
           call gibmin(nnew,fret,iter)
+c          call gibmin(nnew,fret,fretsav,qualsav,absentsav,absentssav,nnewsav,itersum)
           itersum = itersum + iter
           write(31,*) 'Calling ssave from petsub 4'
           call ssave(fret,qual,nnew,fretsav,qualsav,absentsav,absentssav,nnewsav,ftol,succes,ires)
@@ -331,6 +341,8 @@ C  Phase Rule Not Violated
 
 C  Check the following two lines 21/1/15
 c	write(31,*) 'After 12 continue',Ti,nnull,nnew(nnull),nnew(nnull+nvet),nnewsav(nnull),nnewsav(nnull+nvet),add,Pi
+	write(31,*) 'After 12 continue absents   ',(absents(ispec),ispec=1,nspec)
+	write(31,*) 'After 12 continue absentssav',(absentssav(ispec),ispec=1,nspec)
 	fretsav = fret
 	qualsav = qual
         do 34 i=1,nspec
@@ -345,6 +357,7 @@ c	write(31,*) 'After sform',Ti,nnull,nnew(nnull),nnew(nnull+nvet),nnewsav(nnull)
 	if (adcalc) Ti = nnewsav(nnull+nvet)
 	if (chcalc) Pi = nnewsav(nnull+nvep)
 c	write(31,*) 'Before writeout',Ti,nnull,nnew(nnull),nnew(nnull+nvet),nnewsav(nnull),nnewsav(nnull+nvet),add,Pi
+        write(31,*) 'Before writeout',(absents(ispec),ispec=1,nspec)
         call writeout(nnew,qual,itersum,-iprint)
 	if (nnull .gt. 0) write(31,*) 'After writeout',Ti,nnull,nnew(nnull),nnew(nnull+nvet),nnewsav(nnull),nnewsav(nnull+nvet),add,Pi
 
@@ -384,6 +397,8 @@ c        if (loop .le. loopmax .and. qual .gt. qtest) then
 	 end if
 	end if
 	reset = .false.
+C  Call lagcomp one more time with the final phase assemblage to determine the component chemical potentials
+	call lagcomp(s,cpcomplocal,lagc,nspec,nco,absents)
 
         call writeout(nnew,qual,itersum,iprint)
         qualmax = max(qual,qualmax)

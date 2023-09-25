@@ -38,6 +38,8 @@ C  If qo = 0, then assign all non-Einstein modes to the acoustic band.  This may
         zetae3 = 0.
         zetae4 = 0.
         zetao = 0.
+	Ztherm = 0.	
+	if (Ti .le. 0.) return
 
 C  Debye
         

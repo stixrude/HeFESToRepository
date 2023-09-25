@@ -15,6 +15,7 @@
         double precision Ko,Kop,Kopp
 	double precision f1,f2,v1,v2,c
         double precision apar(nspecp,nparp)
+	double precision, parameter :: Tsmall=1.e-5
 c       double precision, parameter :: dpar =  30.0      !  Percentage Error in q
 c       double precision, parameter :: dpar =  10.0      !  Percentage Error in theta
 c       double precision, parameter :: dpar =  20.0      !  Percentage Error in gamma
@@ -73,6 +74,9 @@ c  Convert these others to units of Kelvin here
         Gop =  apar(ispec,36)
         Got =  apar(ispec,37)
 
+	if (To .lt. 0.) then
+	 To = -Tsmall
+	end if
         dparc = 0.0
 c       dparc = dpar
         parold = gam
@@ -144,7 +148,7 @@ C  No roots: domain of positive bulk modulus is unbounded (does not occur for BM
 	 go to 20
 	end if
 	if (asp .eq. 0.) then
-C  Only one root, which has a negative value (f1=-1/7), and therefore corresponds to an upper bound on the volume
+C  Only one root, which has a negative value (f1=-1/7), and therefore corresponds to an upper bound on the volume (K_0'=4)
 	 f1 = -c/bsp
 	 vspupp = Vo*(2.*f1 + 1.)**(-3./2.)
 	 go to 20

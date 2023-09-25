@@ -7,9 +7,10 @@
         include 'absent.inc'
 	
 	integer iprint,i,ibv,ic,icfe,ied,ii,iimax,iph,iphyflag,ispec,izp,jspec,ncall,nvet,nvep
-	integer ipiv(nspecp,nspecp),info,iter,isign,nfast,nnullfast,j,iiron,img,ife
+	integer ipiv(nspecp,nspecp),info,iter,isign,nfast,nnullfast,j,iiron
+	integer img,ife,iox,jc
 	double precision swork(nspecp,nspecp)
-	double precision alpmet,alptot,cpmet,cptot,cvagg,dhdpmol,dhdtmol,dvdpmol,dsdtmol,phugo,xfe
+	double precision alpmet,alptot,cpmet,cptot,cvagg,dhdpmol,dhdtmol,dvdpmol,dsdtmol,phugo,xfe,fe3,stfox
 	double precision ehugo,vtarg,starg,tlast,tmelt,vhugo,asqrt,tlindeman
         double precision rho,wmagg,freeagg,alp,alpagg,alpph,apar,cpph,cpphtot,cvphtot,gamphtot,alpphtot
 	double precision buktphtot,bukphreuss
@@ -52,6 +53,7 @@
 	double precision dfdp(nphasep),dnatomdp(nspecp),dfdptotal,dfdpabstotal
 	double precision dmdp(nspecp),dmdpp(nspecp),dndpp(nspecp),dndp(nspecp),bmet,btot,bstot,gamtot,cvtot
 	double precision dndpfast(nspecp),dndtfast(nspecp),hess(nspecp,nspecp),dndptemp(nspecp,ione),q2save(nspecp,nspecp)
+	double precision dndpfastphase(nspecp),dndtfastphase(nspecp)
 	double precision vwork(nspecp,nspecp),checkt,checkp,ddot,wwork(nspecp),dndttest(nspecp)
 	double precision btiso,bsiso,cpiso,cviso,alpiso,gamiso,phasebuoyancyparameter,deltaent,deltavol,ClapeyronSlope
 	double precision Tro2,ao2,bo2,co2,do2,ho2gas,so2gas,go2gas,STro2
@@ -59,6 +61,10 @@
 	double precision, parameter :: pmantle = rhomantle*gmantle*hmantle/1.e9
 	logical chcalc,adcalc,hucalc
 	integer, parameter :: iaddmax=5
+	integer, parameter :: noxides=7
+	double precision noxygen(noxides)
+	character*2 compstand(noxides)
+	integer ip(ncompp)
         double precision, parameter :: Tsmall = 1.e-5, asmall=1.e-15, nsmall=1.e-15, dfdpsmall=1.e-13
         common /names/ phname,sname
         common /state/ apar(nspecp,nparp),Ti,Pi
@@ -69,6 +75,9 @@
         common /atomc/ stox,wox,wcomp,stcomp,atom,comp
         common /tfindc/ tlast,vtarg,starg,phugo,vhugo,ehugo,dvdpmol,dsdtmol,dhdpmol,dhdtmol,wmaggc,chcalc,adcalc,hucalc,nvet,nvep
         common /phycom/ iphyflag
+C                       SiO2   MgO    FeO    CaO    AlO1.5   NaO0.5   CrO1.5
+	data noxygen/   2.,    1.0,   1.0,   1.0,   1.5,     0.5,     1.5/
+	data compstand/'Si',  'Mg',  'Fe',  'Ca',  'Al',    'Na',     'Cr'/
         data ncall/0/
 	data gphysub/0.0/
 	call cpu_time(start)
@@ -201,25 +210,31 @@ c	write(31,*) 'checkp mu_i dn_i/dP',checkp
 c	write(31,*) 'vspeca',(vspeca(ispec),ispec=1,nspec)
 c	write(31,*) 'sspeca',(sspeca(ispec),ispec=1,nspec)
 C  Compute dndpfast and dndtfast which include only rapidly transforming phases
-	isign = -1.0
 	nfast = 0
+	do 161 ispec=1,nspecp
+	 dndpfast(ispec) = 0.
+	 dndtfast(ispec) = 0.
+161	continue
 	do 158 i=1,nspecp
 	 do 158 j=1,nspecp
 	  q2save(i,j) = q2(i,j)
 158	continue
 	do 156 iph=1,nph
+	 isign = -1.0
+	 do 1563 ispec=1,nspec
+	  q2(ispec,ione) = 0.
+1563	 continue
 	 do 157 ispec=1,nspec
 	  if (f(iph,ispec) .eq. 0.) go to 157
-	  q2(ispec,ione) = 0.
+c          if (ispec .ge. iophase(iph) .and. ispec .le. iophase(iph)+mophase(iph) - 1 .and. phname(iph)(1:2) .eq. 'mw') then
           if (ispec .ge. iophase(iph) .and. ispec .le. iophase(iph)+mophase(iph) - 1) then
 	   nfast = nfast + 1
 	   isign = -1.0*isign
 	   q2(ispec,ione) = float(isign)/sqrt(2.)
 	  end if
 157	 continue
-156	continue
 	nnullfast = 1
-	if (nfast .gt. 2) write(31,*) 'WARNING: nfast greater than two',nfast
+	write(31,*) 'Compute fast terms for phase',phname(iph),nfast,nnullfast
 C  Project temperature derivative of the chemical potential dm/dt
 	call dgemv('Transpose q2fast',nspec,nnullfast,one,q2,nspecp,dmdt,ione,zero,dmdtp,ione)
 C  Project pressure derivative of the chemical potential dm/dp
@@ -231,16 +246,26 @@ C  Solve linear problem: H^P dn^P/dT = dm^P/dT
 C  Solve linear problem: H^P dn^P/dP = dm^P/dP
 	call svdsub(nnullfast,nnullfast,hespro,nspecp,nspecp,dmdpp,vwork,vwork,dndpp,nnulls)
 C  Form dn/dT from dn^P/dT
-	call nform(dndtp,dndtfast,zervec,q2,nspec,nnull)
+	call nform(dndtp,dndtfastphase,zervec,q2,nspec,nnull)
 C  Form dn/dP from dn^P/dP
-	call nform(dndpp,dndpfast,zervec,q2,nspec,nnull)
-c	write(31,*) 'dndtfast',(dndtfast(ispec),ispec=1,nspec)
-c	write(31,*) 'dndpfast',(dndpfast(ispec),ispec=1,nspec)
+	call nform(dndpp,dndpfastphase,zervec,q2,nspec,nnull)
+c	write(31,*) 'dndtfastphase',(dndtfastphase(ispec),ispec=1,nspec)
+c	write(31,*) 'dndpfastphase',(dndpfastphase(ispec),ispec=1,nspec)
+
+	do 160 ispec=1,nspec
+	 dndtfast(ispec) = dndtfast(ispec) + dndtfastphase(ispec)
+	 dndpfast(ispec) = dndpfast(ispec) + dndpfastphase(ispec)
+160	continue
 
 	do 159 i=1,nspecp
 	 do 159 j=1,nspecp
 	  q2(i,j) = q2save(i,j)
 159	continue
+
+156	continue
+
+c	write(31,*) 'dndtfast',(dndtfast(ispec),ispec=1,nspec)
+c	write(31,*) 'dndpfast',(dndpfast(ispec),ispec=1,nspec)
 
         do 1 iph=1,nph
 
@@ -292,9 +317,12 @@ C  Phase Properties
           ntemp(ispec) = 1.
           call cp(ispec,ntemp,chempot,rsum,volsum,sconf,smag)
           sconf = -chempot/Ti
+	  if (Ti .le. 0.) sconf = 0.
           fdumm = gspec(ispec)
           call cp(ispec,n,chempot,rsum,volsum,smixi,smag)
 c         print*, 'Regular solution term',phname(iph)(1:5),sname(ispec)(1:4),rsum,ent
+	  if (.not. absents(ispec)) write(31,'(a31,i5,1x,a4,99f16.8)') 'Chemical potential and activity'
+     &     ,ispec,sname(ispec),(chempot)/1000.,exp((chempot)/(Rgas*Ti)),rsum
           smix = smix + n(ispec)*smixi
 c  with electronic contribution
 c         if (icfe .ne. 0) smag = s(icfe,ispec)*Rgas*(log(2.*2. + 1.) + 3.*log(3.))
@@ -367,6 +395,7 @@ C Phase-wise metamorphic component is used only for the calculation of the adiab
            alpmet = alpmet + dndtfast(ispec)*vspeca(ispec)
            cpmet = cpmet + Ti*dndtfast(ispec)*sspeca(ispec)
            bmet = bmet + dndpfast(ispec)*dmdp(ispec)
+	   write(31,*) 'bmet calc ispec,bmet,dndpfast,dmdp',ispec,bmet,dndpfast(ispec),dmdp(ispec)
           end if
 151      continue
 
@@ -380,10 +409,10 @@ C  calculation of delta as coded.  Changed to R averaging 8/31/01.
          alpphtot = alpph/volph + alpmet/volph
          alpph = alpph/volph
 	 cpphtot = cpph/wmph + cpmet/wmph
-	 cvphtot = cpphtot - Ti*volph*alpphtot**2*buktphtot/wmagg*1000
-	 if (cvphtot .gt. 0.) gamphtot = volph*alpphtot*buktphtot/(cvphtot*wmagg)*1000.
+	 cvphtot = cpphtot - Ti*volph*alpphtot**2*buktphtot/wmph*1000
+	 if (cvphtot .gt. 0.) gamphtot = volph*alpphtot*buktphtot/(cvphtot*wmph)*1000.
 	 bukph = buktphtot*(1. + alpphtot*gamphtot*Ti)
-c	 write(31,*) 'Phase properties',iph,cpphtot,cvphtot,gamphtot,buktph,volph,alpph,bukph,bukphreuss,wmph
+c	 write(31,*) 'Phase properties',iph,cpphtot,cvphtot,gamphtot,buktph,volph,alpph,bukph,bukphreuss,wmph,wmagg
 	 if (alpmet .ne. 0.) then
           write(31,*) 'Fast alpmet,alpagg,alptot',alpmet/volagg,alpph,alpphtot
           write(31,*) 'Fast Pi,X_Fe,bmet,btaggh,btot,bstot',Pi,b(2),bmet,buktph,buktphtot,bukph
@@ -424,7 +453,7 @@ C  Accumulate aggregate properties
          btaggr = btaggr + volph/buktph
          gaggv = gaggv + volph*gshph
          gaggr = gaggr + volph/gshph
-c	 write(31,*) 'calculate gaggr from gshph',iph,volph,gshph,gaggr
+c	 write(31,*) 'calculate gaggr gaggv from gshph',iph,volph,gshph,gaggr,gaggv
          dgdtaggv = dgdtaggv + volph*dgdtph
          dgdtaggr = dgdtaggr + volph/gshph**2*dgdtph
 1       continue
@@ -551,6 +580,7 @@ C  Compute isomorphic contributions to derivative properties
 	cviso = cpiso - Ti*volagg*alpiso**2*btiso/wmagg*1000.
 	gamiso = volagg*alpiso*btiso/(cviso*wmagg)*1000.
 	bsiso = btiso*(1. + alpiso*gamiso*Ti)
+	if (Ti .le. 0.) bsiso = btiso
 	deltavol = ddot(nspec,dndp,ione,vspeca,ione)
 	deltaent = ddot(nspec,dndp,ione,sspeca,ione)
 	dfdpabstotal = 0.
@@ -599,8 +629,10 @@ C  Units in fort.56:
 C  P(GPa) depth(km) T(K) rho(g/cm^3) VB(km/s) VS(km/s) VP(km/s) VSQ(km/s) VPQ(km/s) H(kJ/g) S(J/g/K) alpha(1e5 K^-1) cp(J/g/K) KT(GPa) Qs(-) Qp(-) rho_0(g/cm^3) dominant_phase
 c        write(56,'(17f25.16,2x,a5)') Pi,depth(Pi),Ti,rho,Vbh,Vsh,Vph,Vsh*vsred,
 c     &   Vph*vpred,enthagg/wmagg/1000.,entagg/wmagg,1.e5*alptot,cptot,btot,qs,qp,rhoo,phname(iimax)
+c        write(56,'(17f25.16,2x,a5)') Pi,depth(Pi),Ti,rho,Vbh,Vsh,Vph,Vsh*vsred,
+c     &   Vph*vpred,enthagg/wmagg/1000.,entagg/wmagg,1.e5*alptot,cptot,btot,qs,qp,rhoo,phname(iimax)
         write(56,'(17f25.16,2x,a5)') Pi,depth(Pi),Ti,rho,Vbh,Vsh,Vph,Vsh*vsred,
-     &   Vph*vpred,enthagg/wmagg/1000.,entagg/wmagg,1.e5*alptot,cptot,btot,qs,qp,rhoo,phname(iimax)
+     &   Vph*vpred,enthagg/wmagg/1000.,entagg/wmagg,1.e5*alptot,cptot,bstot,btot,qp,rhoo,phname(iimax)
 c       write(59,500) Pi,depth(Pi),Ti,vol,baggh,btaggh,1.e5*alpagg,cpagg,
 c     &   gruagg,n(1),hsolph/1000.
 c        write(59,500) Pi,depth(Pi),Ti,vol/81.8,baggh,btaggr,1.e5*alpagg,Cv/(fn*Rgas),cpagg*wmagg,
@@ -661,7 +693,7 @@ c     &   gruagg,entagg/wmagg,enthagg/wmagg/1000.,wmagg
 	  so2gas = 205.15 + ao2*log(Ti/Tro2) + bo2*(Ti - Tro2) - 0.5*co2*(1./Ti**2 - 1./Tro2**2) 
      &            - 2.*do2*(1./sqrt(Ti) - 1./sqrt(Tro2))
 	  go2gas = (ho2gas - Ti*so2gas + STro2*Tro2)/1000.
-	  write(31,*) 'oxygen gas enthalpy, entropy, gibbs (kJ/mol) = ',ho2gas,so2gas,go2gas
+	  write(31,*) 'oxygen gas enthalpy, entropy, gibbs (kJ/mol) = ',Ti,ho2gas,so2gas,go2gas
 	  write(31,*) '2.*lagc(ic) - go2gas = ',2.*lagc(ic) - go2gas
 	  fug = log10(exp(1000.*(2.*lagc(ic) - go2gas)/(Rgas*Ti)))
 	  fug = (1000.*(2.*lagc(ic) - go2gas)/(Rgas*Ti))/log(10.)
@@ -669,13 +701,23 @@ c     &   gruagg,entagg/wmagg,enthagg/wmagg/1000.,wmagg
 	 end if
 251	continue
         write(31,'(/,a)') 'Phase Compositions - Cations'
-        write(31,'(12a12)') (comp(i),i=1,nco),'XFe'
+        write(31,'(12a12)') (comp(i),i=1,nco),'XFe','Fe3+'
+	img = ncompp
+	ife = ncompp
+	iox = ncompp
+	do 24 ic=1,ncompp
+	 ip(ic) = ncompp
+	 if (comp(ic) .eq. 'Mg') img = ic
+	 if (comp(ic) .eq. 'Fe') ife = ic
+	 if (comp(ic) .eq. 'O ') iox = ic
+	 do 24 jc=1,noxides
+	  if (comp(ic) .eq. compstand(jc)) ip(ic) = jc
+24	continue
 	do 26 iph=1,nph
+	 stfox = 0.
 	 do 29 ic=1,nco
 	  st(ic) = 0.
 	  wco(iph,ic) = 0.
-	  if (comp(ic) .eq. 'Mg') img = ic
-	  if (comp(ic) .eq. 'Fe') ife = ic
 29	 continue
 	 if (fnpha(iph) .lt. 1.e-12) go to 26
 	 ssum = 0.
@@ -684,12 +726,12 @@ c     &   gruagg,entagg/wmagg,enthagg/wmagg/1000.,wmagg
 	  wsum = 0.
 	  do 28 ic=1,nco
 	   st(ic) = st(ic) + s(ic,ispec)*n(ispec)
+	   if (ip(ic) .ne. 3 .and. ip(ic) .le. noxides) stfox  = stfox + s(ic,ispec)*n(ispec)*noxygen(ip(ic))
 	   if (ispec .eq. iphase(iph)) ssum = ssum + s(ic,ispec)
 	   if (comp(ic) .ne. 'O ') wco(iph,ic) = wco(iph,ic) + s(ic,ispec)*n(ispec)*wcomp(ic)/stcomp(ic)
-c	   if (iph .eq. 1) print '(3i5,22f12.5)', iph,ispec,ic,wco(iph,ic),s(ic,ispec),n(ispec),wcomp(ic),stcomp(ic)
-c	   if (iph .eq. 1) print '(3i5,22f12.5)', iph,ispec,ic,s(ic,ispec),n(ispec),st(ic),ssum
 28	  continue
 27	 continue
+	 stfox = st(iox) - stfox
 	 stsum = 0.
 	 wsum = 0.
 	 do 281 ic=1,nco
@@ -701,12 +743,17 @@ c	   if (iph .eq. 1) print '(3i5,22f12.5)', iph,ispec,ic,s(ic,ispec),n(ispec),st
 	   st(ic) = st(ic)/stsum*ssum
 	   if (comp(ic) .ne. 'O ') wco(iph,ic) = wco(iph,ic)/wsum
 282	  continue
+	  stfox = stfox/stsum*ssum
 	 end if
 	 xfe = 0.0
+	 fe3 = 0.0
 	 if (ife .gt. 0 .and. img .gt. 0) then
 	  if ((st(ife)+st(img)) .gt. 0.) xfe = st(ife)/(st(ife)+st(img))
 	 end if
-	 write(31,'(a5,12f12.5)') phname(iph),(st(ic),ic=1,nco),xfe
+	 if (ife .gt. 0 .and. iox .gt. 0) then
+	  if (st(ife) .gt. 0. .and. st(iox) .gt. 0.) fe3 = st(ife)*2.*(stfox/st(ife) -1.)
+	 end if
+	 write(31,'(a5,12f12.5)') phname(iph),(st(ic),ic=1,nco),xfe,fe3
 26	continue
 
         write(31,'(/,a)') 'Phase Compositions - Mass Standard Oxides (%)'

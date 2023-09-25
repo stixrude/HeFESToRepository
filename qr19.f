@@ -48,6 +48,7 @@ C  Research, 2005. (Figure 9 caption)
 C  Approximate account of temperature dependence of qs added 31 July, 2007
         qs = qs*exp(alpha*Eact/Rgas*(1./Ti - 1./tref))
         qs = min(qs,qslarge)
+	if (Ti .le. 0.) qs = qslarge
 
 C  Assume Poisson solid with no bulk attenuation
         qp = 9./4.*qs

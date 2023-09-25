@@ -95,6 +95,7 @@ c	    vregsz = vreg(iph,kst,ia,ib)*2.*abs(sizi)/(abs(siza) + abs(sizb))
 	    volsum = volsum - f(iph,ia)*f(iph,ib)*(dkron(ispec,ia) - qa)*(dkron(ispec,ib) - qb)*vregsz*ratio
 c	    rsum = rsum + f(iph,ia)*f(iph,ib)*qa*qb*(hev(sizi) - ratio)*wregsz
 c	if (oregsz .ne. 0.) write(31,*) 'Asymmetric',ispec,ia,ib,sizi,siza,sizb,qa,qb,wregsz,msum,nsum,ratio,rsum
+c	    write(31,*) 'rsum calc',ia,ib,ispec,qa,qb,wregsz,ratio
 5	  continue
 52	  continue
 	 end if

@@ -18,6 +18,7 @@
         vspupp = apar(jspec,54)
 C  For the liquid apar(j,51) apar(j,52) are not relevant as these are derived from instabilities in the expression for the vibrational frequency
 C  Use the spinodal limits instead, derived from the reference isotherm (bulk modulus->0)
+
 	vlow = vsplow
 	vupp = vspupp
 

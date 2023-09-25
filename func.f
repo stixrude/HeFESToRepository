@@ -92,8 +92,8 @@ c	print*, 'in func',ispec,sspeco(ispec),smixi,smag,sspeca(ispec)
 	 cpa(ispec) = cpa(ispec) - cpcomp(ispec)
 c	 cpa(ispec) = cpa(ispec) - cpcomp(ispec) + hcalc*Ti*sspeca(ispec)/1000. - fcalc*Pi*vspeca(ispec)
          ersum = ersum + n(ispec)*rsum
-c	 write(31,*) 'func final props',Pi,Ti,ispec,n(ispec),gspeca(ispec),vspeca(ispec)
-c     &    ,sspeca(ispec),sspeco(ispec),smixi,smag,vspeco(ispec),volsum
+c	 write(31,'(a16,f6.2,f9.2,i5,99f29.15)') 'func final props',Pi,Ti,ispec,n(ispec),gspeca(ispec),vspeca(ispec)
+c     &    ,sspeca(ispec),sspeco(ispec),smixi,smag,vspeco(ispec),volsum,cpa(ispec)
 c	 write(31,'(a13,i5,71f29.15)') 'in func',ispec,n(ispec),chempot/1000.,rsum,gspeca(ispec)/1000.,cpcomp(ispec),cpa(ispec)
 c     &    ,vspeca(ispec),bspeca(ispec),dvdpmol
 1       continue

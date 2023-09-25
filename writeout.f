@@ -9,7 +9,7 @@
 	integer iter,iprint,i,ispec,ispec1,ispec2,j,jspec,lph1,lph2,lphrep1,lphrep2,ncall,ndim,k,npres,nw,iextra,nvet,nvep
 	integer ii,jj
 	double precision qual,apar,dhdpmol,dhdtmol,diff11,diff12,dvdpmol,dsdtmol,ehugo,ftest,gibbs,gprint,phugo,Pi,pold,vtarg,starg
-	double precision sumn,Ti,tlast,told,vhugo,func,depth,vsum,wmagg,nswap(nspecp),dnrm2
+	double precision sumn,Ti,tlast,told,vhugo,func,depth,vsum,wmagg,nswap(nspecp),dnrm2,qualwrite
         logical newpt,valid
 	logical chcalc,adcalc,hucalc
         character*80 phname(nphasep),sname(nspecp)
@@ -238,6 +238,8 @@ c         write(31,'(a11,105f8.4)') 'Chem. Pots.',(cpa(i)/1000.,i=1,nspec)
 
 c        if (iprint .ge. 1) then
         if (iprint .eq. 1) then
+	 qualwrite = qual
+	 if (qual .ge. 100.0) qualwrite = 99.999
          write(31,'(/,a)') 'Phase equilibria'
          write(31,'(a7,a9,a9,105a12)') 'Pi','depth','Ti',(sname(ispec)(1:8),ispec=1,nspec)
          write(31,700) Pi,depth(Pi),Ti,(nprint(i),i=1,nspec),
@@ -252,7 +254,7 @@ c        if (iprint .ge. 1) then
          gprint = gibbs/1000.
          if (abs(gprint) .gt. 10.) gprint = gibbs/10000.
          write(99,700) Pi,depth(Pi),Ti,(nprint(i),i=1,nspec),
-     &    gprint,qual
+     &    gprint,qualwrite
          if (lphrep1 .ne. 0 .and. lphrep2 .ne. 0) then
           nold1 = nprint(iphase(lphrep1))
           nold2 = nprint(iphase(lphrep2))

@@ -1,0 +1,141 @@
+0,140,14,2.5330109805002023,0,0,-2,0,0,0,0
+8,2,4,2
+oxides
+Si           3.79222     3.79222    0
+Mg           4.88475     4.88475    0
+Fe           0.57874     0.57874    0
+Ca           0.28734     0.28734    0
+Al           0.39685     0.39685    0
+Na           0.02197     0.02197    0
+Cr           0.03813     0.03813    0
+ O          14.00450    14.00450    0
+1,1,1,1
+/Users/stixrude/qh/invert/par/inv010123
+73
+phase plg
+0
+an
+ab
+phase sp
+1
+sp
+hc
+smag
+picr
+phase opx
+0
+en
+fs
+mgts
+odi
+phase c2c
+0
+mgc2
+fec2
+phase cpx
+1
+di
+he
+cen
+cats
+jd
+acm
+phase wo
+1
+wo
+phase pwo
+1
+pwo
+phase gt
+0
+py
+al
+gr
+mgmj
+namj
+andr
+knor
+phase cpv
+0
+capv
+phase ol
+1
+fo
+fa
+phase wa
+0
+mgwa
+fewa
+phase ri
+0
+mgri
+feri
+phase il
+0
+mgil
+feil
+co
+hem
+esk
+phase pv
+0
+mgpv
+fepv
+alpv
+hepv
+hlpv
+fapv
+crpv
+phase ppv
+0
+mppv
+fppv
+appv
+hppv
+cppv
+phase cf
+0
+mgcf
+fecf
+nacf
+hmag
+crcf
+phase nal
+0
+mnal
+fnal
+nnal
+phase mw
+0
+pe
+wu
+wuls
+anao
+mag
+phase qtz
+0
+qtz
+phase coes
+0
+coes
+phase st
+0
+st
+phase apbo
+0
+apbo
+phase ky
+0
+ky
+phase neph
+0
+neph
+phase fea
+0
+fea
+phase feg
+0
+feg
+phase fee
+0
+fee

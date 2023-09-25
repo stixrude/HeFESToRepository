@@ -26,6 +26,8 @@ C  If qo = 0, then assign all non-Einstein modes to the acoustic band
 	if (qo .eq. 0.) then
 	 su = 1./(1. - qe)
 	end if
+	Ctherm = 0.
+	if (Ti .le. 0.)  return
 
 C  Debye
         Cd  = 1./su*Heat(wd1/Ti,do,1)

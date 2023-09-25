@@ -5,6 +5,7 @@ C  Determine validity of solution: amount of each component on each site in each
         include 'P1'
         include 'chem.inc'
         include 'absent.inc'
+	include 'lag.inc'
 
 	integer ic,iph,ispec,jsp,kst,nconstr,nsitecp,i
 	double precision vsum
@@ -22,14 +23,15 @@ C  Determine validity of solution: amount of each component on each site in each
         vsum = 0.
 
 C---> Constrain the amount of each present species to be greater than zero
-c        do 21 ispec=1,nspec
-c         if (absents(ispec)) go to 21
-c         if (n(ispec) .lt. -vsmall) then
-c          valid = .false.
-c          vsum = vsum + 0.5*(abs(n(ispec)) - n(ispec))
-c         end if
-c21      continue
-c	return
+C     Also modify the subroutine nlmin_L.f to constrain the solution to n_i>0 for all i.
+        do 21 ispec=1,nspec
+         if (absents(ispec)) go to 21
+         if (n(ispec) .lt. -vsmall) then
+          valid = .false.
+          vsum = vsum + 0.5*(abs(n(ispec)) - n(ispec))
+         end if
+21      continue
+	return
 C<---
 
 	do 10 iph=1,nph
@@ -69,6 +71,16 @@ c           print*, 'Negative nikp',iph,kst,ic
           end if
 11       continue
 10      continue
+
+	do 12 ispec=1,nspec
+         if (absents(ispec)) go to 12
+         if (iferric(ispec)) then
+          if (n(ispec) .lt. -vsmall) then
+           valid = .false.
+	   vsum = vsum + 0.5*(abs(n(ispec)) - n(ispec))
+          end if
+         end if
+12      continue
 
 c       print '(a5,31e12.5,e12.5)', 'valid',(n(i),i=1,nspec),vsum
 c       write(31,'(a5,31e12.5,e12.5)') 'valid',(n(i),i=1,nspec),vsum

@@ -88,6 +88,7 @@ c        thet = theo*exp(-(gammo-gammo*qo)*log(Vi/Vo) - (gamma-gammo))
         end if
         beta = be*(Vi/Vo)**(ge)
 	entve = (uth - Fth)/Ti + beta*Ti
+	if (Ti .le. 0.) entve = 0.
 
         Fpv = 1000.*Pi*Vi
         Fel = -(beta/2.)*(Ti*Ti - To*To)

@@ -1,4 +1,5 @@
         subroutine gibmin(nnew,fret,itersum)
+c        subroutine gibmin(nnew,fret,fretsav,qualsav,absentsav,absentssav,nnewsav,itersum)
 
         include 'P1'
         include 'const.inc'
@@ -71,6 +72,8 @@ c        write(31,'(a6,5i5,99f12.5)') 'vspec',iter,nnull,nvep,nvet,ndim,Pi,Ti,(v
 	
 	write(31,*) 'Calling ssave from gibmin 1'
 	call ssave(fret,qual,nnew,fretsav,qualsav,absentsav,absentssav,nnewsav,ftol,succes,ires)
+	write(31,*) 'absents   ',(absents(i),i=1,nspec)
+	write(31,*) 'absentssav',(absentssav(i),i=1,nspec)
 
         call tracesub(n,iphase,mphase,nspec,nph,absent,absents,add)
         if (add) then
@@ -88,6 +91,8 @@ c        itersum = itersum + iter
 
 	write(31,*) 'Calling ssave from gibmin 2'
         call ssave(fret,qual,nnew,fretsav,qualsav,absentsav,absentssav,nnewsav,ftol,succes,ires)
+	write(31,*) 'absents   ',(absents(i),i=1,nspec)
+	write(31,*) 'absentssav',(absentssav(i),i=1,nspec)
 
 	fret = fretsav
 	qualsav = qual
@@ -151,6 +156,8 @@ c          go to 103
 	val = func(nnew)
 c	write(31,*) 'time in gibmin',ggibmin,nnull,(nnew(i),i=1,nnull),fret,val,(n(i),i=1,nspec)
 	write(31,*) 'time in gibmin',ggibmin,nnull
+	write(31,*) 'absents   ',(absents(i),i=1,nspec)
+	write(31,*) 'absentssav',(absentssav(i),i=1,nspec)
 
 c	print*, 'end gibmin'
 

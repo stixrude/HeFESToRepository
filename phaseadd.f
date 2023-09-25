@@ -284,6 +284,7 @@ C--->  Restore chem parameters and matrices
 47      continue
 C<---
 	write(31,*) 'Ti at end of phaseadd',Ti
+	write(31,*) 'absents at end of phaseadd',(absents(ispec),ispec=1,nspec)
 	pabounds = .false.
         return
         end

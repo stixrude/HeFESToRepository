@@ -3,5 +3,5 @@
         integer iphase(nphasep),mphase(nphasep),lphase(nspecp)
         integer iophase(nphasep),mophase(nphasep)
 	integer lph
-	logical iastate(nspecp,nspecp,nsitep)
-        common /lagcom/ cpcomp,lags,lagc,nphase,nlag,rep,lph,iphase,mphase,lphase,iophase,mophase,iastate
+	logical iastate(nspecp,nspecp,nsitep),iferric(nspecp)
+        common /lagcom/ cpcomp,lags,lagc,nphase,nlag,rep,lph,iphase,mphase,lphase,iophase,mophase,iastate,iferric

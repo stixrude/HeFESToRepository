@@ -27,21 +27,29 @@ c	print*, 'nlmin',nconstr,ndim
 1                da(i,j) = 0.
      
         nconstr = 0
+c	go to 24
 C---> Constrain the amount of each present species to be greater than zero
-c        do 22 ispec=1,nspec
-c         if (absents(ispec)) go to 22
-c         nconstr = nconstr + 1
-c         da(ispec,nconstr) = -1.0
-c22      continue
-c        go to 23
+        do 22 ispec=1,nspec
+         if (absents(ispec)) go to 22
+         nconstr = nconstr + 1
+         da(ispec,nconstr) = -1.0
+22      continue
+        go to 23
 C<---
 C  Set inequality constraints on N_jk (j components, k sites)
+24	 continue
             valid = validc(vsum,x,da,nconstr)
 
+C  Add positive definitiveness constraint to each member of pairs of species with identical formulae in the same phase
+C  This is necessary to prevent a large negative amount of one member of the pair.
         do 21 ispec=1,nspec
          if (absents(ispec)) go to 21
          iph = lphase(ispec)
          if (ispec  .ge. iophase(iph) .and. ispec .le. iophase(iph)+mophase(iph)-1) then
+          nconstr = nconstr+1
+          da(ispec,nconstr) = -1.0
+         end if
+         if (iferric(ispec)) then
           nconstr = nconstr+1
           da(ispec,nconstr) = -1.0
          end if
