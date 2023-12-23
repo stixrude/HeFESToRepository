@@ -8,7 +8,7 @@
 	
 	integer iprint,i,ibv,ic,icfe,ied,ii,iimax,iph,iphyflag,ispec,izp,jspec,ncall,nvet,nvep
 	integer ipiv(nspecp,nspecp),info,iter,isign,nfast,nnullfast,j,iiron
-	integer img,ife,iox,jc
+	integer img,ife,iox,jc,nfastold
 	double precision swork(nspecp,nspecp)
 	double precision alpmet,alptot,cpmet,cptot,cvagg,dhdpmol,dhdtmol,dvdpmol,dsdtmol,phugo,xfe,fe3,stfox
 	double precision ehugo,vtarg,starg,tlast,tmelt,vhugo,asqrt,tlindeman
@@ -219,6 +219,7 @@ C  Compute dndpfast and dndtfast which include only rapidly transforming phases
 	 do 158 j=1,nspecp
 	  q2save(i,j) = q2(i,j)
 158	continue
+	nfastold = 0
 	do 156 iph=1,nph
 	 isign = -1.0
 	 do 1563 ispec=1,nspec
@@ -234,6 +235,8 @@ c          if (ispec .ge. iophase(iph) .and. ispec .le. iophase(iph)+mophase(iph
 	  end if
 157	 continue
 	nnullfast = 1
+	if (nfast .eq. nfastold) go to 156
+	nfastold = nfast
 	write(31,*) 'Compute fast terms for phase',phname(iph),nfast,nnullfast
 C  Project temperature derivative of the chemical potential dm/dt
 	call dgemv('Transpose q2fast',nspec,nnullfast,one,q2,nspecp,dmdt,ione,zero,dmdtp,ione)

@@ -9,6 +9,9 @@
         logical aniso
         aniso = .false.
 
+	Ftherm = 0.
+	if (Ti .le. 0.) return
+
         su = fn*zu
         wo = (wou + wol)/2.
         do = 0.
@@ -32,32 +35,24 @@ C  If qo = 0, then assign all non-Einstein modes to the acoustic band
 	Fo = 0.
 
 C  Debye
-	if (Ti .gt. 0.) then
-         Fd = 1./su*Helm(wd1/Ti,do,1)
-         if (aniso) Fd = Fd/3. + 
+        Fd = 1./su*Helm(wd1/Ti,do,1)
+        if (aniso) Fd = Fd/3. + 
      &             (Helm(wd2/Ti,do,1) + Helm(wd3/Ti,do,1))/(3.*su)
-	end if
-        if (Ti .ge. 0.) Fd = 3.*fn*Rgas*Ti*Fd + 9./8.*fn*Rgas*wd1
+        Fd = 3.*fn*Rgas*Ti*Fd + 9./8.*fn*Rgas*wd1
 
 C  Sin
-	if (Ti .gt. 0.) then
-         Fs = 1./su*Helm(ws1/Ti,do,3)
-         if (aniso) Fs = Fs/3. + 
+        Fs = 1./su*Helm(ws1/Ti,do,3)
+        if (aniso) Fs = Fs/3. + 
      &             (Helm(ws2/Ti,do,3) + Helm(ws3/Ti,do,3))/(3.*su)
-	end if
 	Fs = 3.*fn*Rgas*Ti*Fs
 
 C  Einstein
-	if (Ti .gt. 0.) then
-         Fe = qe1*Helm(we1/Ti,do,2) + qe2*Helm(we2/Ti,do,2) +
+        Fe = qe1*Helm(we1/Ti,do,2) + qe2*Helm(we2/Ti,do,2) +
      &        qe3*Helm(we3/Ti,do,2) + qe4*Helm(we4/Ti,do,2)
-	end if
 	Fe = 3.*fn*Rgas*Ti*Fe
 
 C  Optic Continuum
-	if (Ti .gt. 0.) then
-         Fo = qo*Helm(wo/Ti,do,4)
-	end if
+        Fo = qo*Helm(wo/Ti,do,4)
 	Fo = 3.*fn*Rgas*Ti*Fo
 
         Ftherm = Fd + Fs + Fe + Fo

@@ -9,6 +9,9 @@
         logical aniso
         aniso = .false.
 
+	Ztherm = 0.
+	if (Ti .le. 0.) return
+
         su = fn*zu
         wo = (wou + wol)/2.
         do = 0.
@@ -39,7 +42,6 @@ C  If qo = 0, then assign all non-Einstein modes to the acoustic band.  This may
         zetae4 = 0.
         zetao = 0.
 	Ztherm = 0.	
-	if (Ti .le. 0.) return
 
 C  Debye
         

@@ -10,6 +10,9 @@
         logical aniso
         aniso = .false.
 
+	Etherm = 0.
+	if (Ti .le. 0.) return
+
         su = fn*zu
         wo = (wou + wol)/2.
         do = 0.
@@ -34,33 +37,26 @@ C  If qo = 0, then assign all non-Einstein modes to the acoustic band
 
 C  Debye
         
-	if (Ti .gt. 0.) then
-         ud = 1./su*Ener(wd1/Ti,do,ione)
-         if (aniso) ud = ud/3. + 
+        ud = 1./su*Ener(wd1/Ti,do,ione)
+        if (aniso) ud = ud/3. + 
      &              (Ener(wd2/Ti,do,ione) + Ener(wd3/Ti,do,ione))/(3.*su)
-	end if
-	if (Ti .ge. 0.) ud = 3.*fn*Rgas*Ti*ud + 9./8.*fn*Rgas*wd1
+c	if (Ti .ge. 0.) ud = 3.*fn*Rgas*Ti*ud + 9./8.*fn*Rgas*wd1
+	ud = 3.*fn*Rgas*Ti*ud + 9./8.*fn*Rgas*wd1
 
 C  Sin
-	if (Ti .gt. 0.) then
-         us = 1./su*Ener(ws1/Ti,do,ithree)
-         if (aniso) us = us/3. + 
+        us = 1./su*Ener(ws1/Ti,do,ithree)
+        if (aniso) us = us/3. + 
      &              (Ener(ws2/Ti,do,ithree) + Ener(ws3/Ti,do,ithree))/(3.*su)
-	end if
 	us = 3.*fn*Rgas*Ti*us
 
 C  Einstein
-	if (Ti .gt. 0.) then
-         ue = qe1*Ener(we1/Ti,do,itwo) + qe2*Ener(we2/Ti,do,itwo) +
+        ue = qe1*Ener(we1/Ti,do,itwo) + qe2*Ener(we2/Ti,do,itwo) +
      &        qe3*Ener(we3/Ti,do,itwo) + qe4*Ener(we4/Ti,do,itwo)
-	end if
 	ue = 3.*fn*Rgas*Ti*ue
 
 C  Optic Continuum
-	if (Ti .gt. 0.) then
-	 ifour = 4
-         uo = qo*Ener(wo/Ti,do,ifour)
-	end if
+	ifour = 4
+        uo = qo*Ener(wo/Ti,do,ifour)
 	uo = 3.*fn*Rgas*Ti*uo
 
         Etherm = ud + us + ue + uo
