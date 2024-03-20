@@ -10,7 +10,7 @@ LD = gfortran
 LFLAGS = -L/usr/local/lib -lnlopt -lm
 # LAPACK and BLAS
 LFLAGS += -framework Accelerate
-LFLAGS += -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk
+LFLAGS += -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
 
 # Directory Structure
 SRCDIR = src

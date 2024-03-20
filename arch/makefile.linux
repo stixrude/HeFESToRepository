@@ -9,8 +9,7 @@ LD = gfortran
 # Link to NLOPT library which can be downloaded and installed from https://nlopt.readthedocs.io/en/latest/
 LFLAGS = -L/usr/local/lib -lnlopt -lm
 # LAPACK and BLAS
-LFLAGS += -framework Accelerate
-LFLAGS += -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk
+LFLAGS += -lblas -llapack
 
 # Directory Structure
 SRCDIR = src
