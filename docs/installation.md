@@ -1,7 +1,8 @@
 # HeFESTo Linux Installation Guide
 
 Written 2024-03-07 by Joseph Lewis-Merrill
-Updated 2024-03-20 by David James
+
+Updated 2024-03-26 by David James
 
 Special thanks to Matthew Bogumil and David James
 ***
