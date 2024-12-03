@@ -16,7 +16,7 @@
         double precision nnew(nspecp)
         double precision nnewsav(nspecp)
 	double precision bold(ncompp),cpcomplocal(nspecp)
-        integer jphase(nspecp),nvet,nvep
+        integer jphase(nspecp),nvet,nvep,j
         logical absentsav(nspecp),absentssav(nspecp)
         logical absenttmp(nspecp),absentstmp(nspecp)
 	logical spinod(nspecp),spinph(nphasep),spinlog,reslog,succes
@@ -29,6 +29,10 @@
         data qualmax/-1.e15/
 	data gphadd/0.0/,gpetsub/0.0/
 	call cpu_time(pstart)
+C   Extra degree of freedom
+	iextra = 0
+	if (adcalc) iextra = iextra + 1
+	if (chcalc) iextra = iextra + 1
 
 	adcalcsav = adcalc
 	chcalcsav = chcalc
@@ -46,9 +50,8 @@
 	resall = .false.
 
         do 4 ispec=1,nspec
-c4       gspeca(ispec) = gspec(ispec)
-       gspeca(ispec) = gspec(ispec)
-c	 write(31,*) ispec,gspeca(ispec)
+         gspeca(ispec) = gspec(ispec)
+c	 write(31,*) 'gspeca',ispec,gspeca(ispec),Pi,Ti
 4	continue
 	write(31,*) 'spinodal instabilities:',Ti,(spinod(ispec),ispec=1,nspec)
 
@@ -62,7 +65,6 @@ c         if (spinph(iph)) write(31,'(a34,1x,i5)') 'WARNING: Spinodally unstable
 c74      continue
 
 C  Reset initial guess
-	print*, 'Reset initial guess'
 
 	reslog = .false.
         reset = .false.
@@ -75,15 +77,12 @@ C  Reset initial guess
 	 if (b(ic) .ne. bold(ic)) reset = .true.
 	 bold(ic) = b(ic)
 292	continue
+	if (reset) print*, 'Reset initial guess'
+	if (reset) write(31,*) 'Reset initial guess'
         if (reset) then
-c         do 2 i=1,nspecp
          do 2 i=1,nnull
           nnew(i) = 0.
 2	 continue
-c	 if (chcalc) then
-c	  nnew(nnull+nvep) = 10.0
-c	  Pi = 10.0
-c	 end if
         end if
 	call nform(nnew,n,n1,q2,nspec,nnull)
         do 29 i=1,nspecp
@@ -96,6 +95,12 @@ C  Find equilibrium assemblage
         write(31,'(/,a,99f12.5)') 'Initial guess',Pi,Ti
 	write(31,'(99f5.1)') (n(i),i=1,nspec)
 	write(31,*) (absents(ispec),ispec=1,nspec)
+c	write(31,*) (nnew(j),j=1,nnull)
+c	write(31,*) (n1(j),j=1,nspec)
+c        write(31,*) 'q2'
+c        do 141 i=1,nspec
+c         write(31,'(99f5.1)') (q2(i,j),j=1,nnull)
+c141     continue
 
 	call spinrem(f,nspec,nph,absent,absents,allow,spinlog)
 	if (reslog .or. spinlog) call sform(s,b,n1,q1,q2,nspec,nco,nc,ncs,nnull,nnulls,absents)
@@ -136,7 +141,6 @@ C  Check whether removal of spinodal instability generates infeasible solution a
 83	continue
 84	continue
         call gibmin(nnew,fret,iter)
-c        call gibmin(nnew,fret,fretsav,qualsav,absentsav,absentssav,nnewsav,itersum)
         write(31,*) 'back from gibmin absents   ',(absents(ispec),ispec=1,nspec)
         write(31,*) 'back from gibmin absentssav',(absentssav(ispec),ispec=1,nspec)
         itersum = itersum + iter
@@ -155,7 +159,6 @@ c        call gibmin(nnew,fret,fretsav,qualsav,absentsav,absentssav,nnewsav,iter
 	 call sform(s,b,n1,q1,q2,nspec,nco,nc,ncs,nnull,nnulls,absents)
          call newfrm(q2,n,n1,nnew,nspec,nnull,absents)
          call gibmin(nnew,fret,iter)
-c         call gibmin(nnew,fret,fretsav,qualsav,absentsav,absentssav,nnewsav,itersum)
          itersum = itersum + iter
 	 write(31,*) 'Calling ssave from petsub 2'
          call ssave(fret,qual,nnew,fretsav,qualsav,absentsav,absentssav,nnewsav,ftol,succes,ires)
@@ -185,7 +188,7 @@ C  Check for phase addition or subtraction
 	 adcalc = adcalcsav
 	 chcalc = chcalcsav
 c	write(31,*) 'Back from phaseadd',Ti,nnull,nnew(nnull),nnew(nnull+nvet),nnewsav(nnull),nnewsav(nnull+nvet),add,Pi
-	write(31,*) 'Back from phaseadd',add,(absents(ispec),ispec=1,nspec)
+c	write(31,*) 'Back from phaseadd',add,(absents(ispec),ispec=1,nspec)
          if (.not. add) go to 12
 	 call newfrm3(s,dn,n,nspec,nc,ncs)
          call sform(s,b,n1,q1,q2,nspec,nco,nc,ncs,nnull,nnulls,absents)
@@ -202,9 +205,9 @@ c         write(32,'(/,a)') 'Phase Addition or Subtraction'
           jphase(nphpres) = lph
 92       continue
 C   Extra degree of freedom
-	iextra = 0
-	if (adcalc) iextra = iextra + 1
-	if (chcalc) iextra = iextra + 1
+c	iextra = 0
+c	if (adcalc) iextra = iextra + 1
+c	if (chcalc) iextra = iextra + 1
 C  
          prdiff = nphpres - nco - iextra
 	 if (prdiff .le. 0.) go to 101
@@ -251,7 +254,6 @@ C  Remove phases one by one and check for minimum energy solution
            go to 102
           end if
           call gibmin(nnew,fret,iter)
-c          call gibmin(nnew,fret,fretsav,qualsav,absentsav,absentssav,nnewsav,itersum)
           itersum = itersum + iter
           if (.not. valid(vsum,nnew)) then
            write(31,*) 'WARNING: Solution for',jphase(lph),' absent is invalid',vsum
@@ -307,7 +309,6 @@ c          call gibmin(nnew,fret,fretsav,qualsav,absentsav,absentssav,nnewsav,it
 C  Phase Rule Not Violated
 101      continue
          call gibmin(nnew,fret,iter)
-c         call gibmin(nnew,fret,fretsav,qualsav,absentsav,absentssav,nnewsav,itersum)
          itersum = itersum + iter
 	 write(31,*) 'Calling ssave from petsub 3'
          call ssave(fret,qual,nnew,fretsav,qualsav,absentsav,absentssav,nnewsav,ftol,succes,ires)
@@ -324,7 +325,6 @@ c         call gibmin(nnew,fret,fretsav,qualsav,absentsav,absentssav,nnewsav,ite
           call sform(s,b,n1,q1,q2,nspec,nco,nc,ncs,nnull,nnulls,absents)
           call newfrm(q2,n,n1,nnew,nspec,nnull,absents)
           call gibmin(nnew,fret,iter)
-c          call gibmin(nnew,fret,fretsav,qualsav,absentsav,absentssav,nnewsav,itersum)
           itersum = itersum + iter
           write(31,*) 'Calling ssave from petsub 4'
           call ssave(fret,qual,nnew,fretsav,qualsav,absentsav,absentssav,nnewsav,ftol,succes,ires)
@@ -341,8 +341,8 @@ c          call gibmin(nnew,fret,fretsav,qualsav,absentsav,absentssav,nnewsav,it
 
 C  Check the following two lines 21/1/15
 c	write(31,*) 'After 12 continue',Ti,nnull,nnew(nnull),nnew(nnull+nvet),nnewsav(nnull),nnewsav(nnull+nvet),add,Pi
-	write(31,*) 'After 12 continue absents   ',(absents(ispec),ispec=1,nspec)
-	write(31,*) 'After 12 continue absentssav',(absentssav(ispec),ispec=1,nspec)
+c	write(31,*) 'After 12 continue absents   ',(absents(ispec),ispec=1,nspec)
+c	write(31,*) 'After 12 continue absentssav',(absentssav(ispec),ispec=1,nspec)
 	fretsav = fret
 	qualsav = qual
         do 34 i=1,nspec
@@ -357,11 +357,19 @@ c	write(31,*) 'After sform',Ti,nnull,nnew(nnull),nnew(nnull+nvet),nnewsav(nnull)
 	if (adcalc) Ti = nnewsav(nnull+nvet)
 	if (chcalc) Pi = nnewsav(nnull+nvep)
 c	write(31,*) 'Before writeout',Ti,nnull,nnew(nnull),nnew(nnull+nvet),nnewsav(nnull),nnewsav(nnull+nvet),add,Pi
-        write(31,*) 'Before writeout',(absents(ispec),ispec=1,nspec)
+c        write(31,*) 'Before writeout',(absents(ispec),ispec=1,nspec)
         call writeout(nnew,qual,itersum,-iprint)
-	if (nnull .gt. 0) write(31,*) 'After writeout',Ti,nnull,nnew(nnull),nnew(nnull+nvet),nnewsav(nnull),nnewsav(nnull+nvet),add,Pi
+c	if (nnull .gt. 0) write(31,*) 'After writeout',Ti,nnull,nnew(nnull),nnew(nnull+nvet),nnewsav(nnull),nnewsav(nnull+nvet),add,Pi
 
 C  Check solution for consistency
+
+C  Reset absent
+        do 111 iph=1,nph
+         absent(iph) = .true.
+         do 112 i=iphase(iph),iphase(iph)+mphase(iph)-1
+          absent(iph) = absent(iph) .and. absents(i)
+112      continue
+111     continue
 
         nphpres = 0
         do 91 iph=1,nph
@@ -370,8 +378,8 @@ C  Check solution for consistency
 91      continue
 
         if (nphpres .gt. nco+iextra) then
-         write(99,100) 'WARNING: Phase Rule Violation',Pi,Ti,nphpres,nco
-         write(31,100) 'WARNING: Phase Rule Violation',Pi,Ti,nphpres,nco
+         write(99,100) 'WARNING: Phase Rule Violation',Pi,Ti,nphpres,nco,iextra
+         write(31,100) 'WARNING: Phase Rule Violation',Pi,Ti,nphpres,nco,iextra
         end if
         if (iadd .eq. iaddmax+1) then
          write(31,*) 'WARNING: Phase Addition Process May Not Be Converged'
@@ -389,9 +397,11 @@ c        if (loop .le. loopmax .and. qual .gt. qtest) then
 	 resall = .true.
          call restore(f,dn,lags,nspec,nph,absent,absents,allow,reslog,resall)
 	 resall = .false.
+c	 if (reslog) then
 	 if (reslog .or. qual .gt. qtest) then
 	  reset = .true.
-	  write(31,*) 'INFORMATION: Looping back in petsub with restore and reset'
+	  print*, 'INFORMATION: Looping back in petsub with restore and reset',reslog,qual,qtest
+	  write(31,*) 'INFORMATION: Looping back in petsub with restore and reset',reslog,qual,qtest
           loop = loop + 1
 	  go to 10
 	 end if

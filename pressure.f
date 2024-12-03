@@ -3,16 +3,19 @@
         include 'P1'
         include 'const.inc'
 
+        character*80 phname(nphasep),sname(nspecp)
 	integer ibv,ied,ispec,izp
 	double precision Vi,a3,a4,a5,anh,apar,be,beta,d,detasdv,eta,etas,f,fn,fo,g,gam,gamma,gammo,ge,go,gop
 	double precision got,htl,pa,pc,pel,ph,pi,pzp,q,q2a2,qe1,qe2,qe3,qe4,qo,qp,theo,thet,ti,to,uth,uto,vo
 	double precision vx,wd1,wd1o,wd2,wd2o,wd3,wd3o,we1,we1o,we2,we2o,we3,we3o,we4,we4o,wm,wol,wolo,wou
 	double precision wouo,ws1,ws1o,ws2,ws2o,ws3,ws3o,xv,zu,pressure,Etherm
+	double precision un,pn,kn,kpn
         logical aniso
 	logical isochor
         double precision Ko,Kop,Kopp
         common /state/ apar(nspecp,nparp),Ti,Pi
         common /chor/ ispec,isochor
+        common /names/ phname,sname
         d = 1.e-6
         aniso = .false.
 
@@ -40,18 +43,6 @@
      &                     we1,we2,we3,we4,qe1,qe2,qe3,qe4)
 
         ph = .001*(gamma/Vi)*(uth - uto)
-C  Fluid
-        if (htl .ne. 0.) then
-	 print*, 'Warning entering old fluid calculation in pressure.f'
-	 write(31,*) 'Warning entering old fluid calculation in pressure.f'
-c         gamma = gammo + gammo*qo/Vo*(Vi-Vo)
-c         q = Vi/gamma*gammo*qo/Vo
-         Vx = 77.8
-         Vx = Vo
-         gamma = gammo + gammo*qo/Vx*(Vi-Vx)
-         q = Vi/gamma*gammo*qo/Vx
-         ph = 0.001*(gamma/Vi)*3.*htl*fn*Rgas*(Ti-To)
-        end if
         pa = .001*3.*fn*Rgas*anh*(Ti**2 - To**2)/Vi
         pzp = 0.0
         if (abs(izp) .eq. 1) pzp = izp*0.001*(9./8.)*fn*Rgas*thet*gamma/Vi
@@ -80,10 +71,18 @@ C Birch-Murnaghan
          pc = 3.*Ko*f*(1. + 2.*f)**2.5*(1. + 1./2.*a3*f + 1./6.*a4*f*f + 1./24.*a5*f*f*f)
         end if   
 
-        pressure = pc + ph + pa + pel + pzp - Pi
+C  Ice VII-X contribution
+	un = 0.
+	pn = 0.
+	kn = 0.
+	kpn = 0.
+	if (sname(ispec)(1:4) .eq. "ice7") call icebcc(Vi,un,pn,kn,kpn)
+
+        pressure = pc + ph + pa + pel + pzp + pn - Pi
 
 c        write(31,*) 'pressure = ',ispec,Pi,Ti,Vi,pressure,pc,ph,thet,gamma,uth,uto
 cc     &    ,3.*Ko*f*(1. + 2.*f)**2.5*(1. + 1./2.*a3*f),f
+c        print*, 'pressure = ',ispec,Pi,Ti,Vi,pressure,pc,ph,thet,gamma,uth,uto
 
         return
         end

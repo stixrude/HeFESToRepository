@@ -3,8 +3,8 @@
 	integer i,iphyflag,ires,itersum,jlo,klo,mint,ncall,ns,ntry,nvet,nvep
 	double precision Pi,Ti,superad,alp,cap,cv,deltas,depths,dgdt,dhdpmol,dhdtmol,dvdpmol,dsdtmol,ehugo,ent,entrop
 	double precision errt,etas,freeagg,ftot,gamma,gsh,ph,phugo,pisave,pzp,qq,rho,vtarg,starg,tcal,thet,thug
-	double precision tisen,tlast,ttry1,ttry2,uth,uto,vhugo,vol,wmagg,zeta
-	double precision zeroint,vdeb,gamdeb
+	double precision tisen,tlast,ttry1,ttry2,uth,uto,vhugo,vol,wmagg,zeta,clow,cupp,thugo,tad0
+	double precision zeroint,vdeb,gamdeb,Tspin
 	include 'P1'
 	include 'const.inc'
         logical adiabat,chcalc,adcalc,hucalc
@@ -50,6 +50,7 @@ c       mint = 3
           Pi = Pisave
 	  adcalc = .true.
 	  write(31,*) 'starg = ',starg
+	  tad0 = Ti
           if (Pi .eq. 0.) return
          end if
 	 return
@@ -59,11 +60,13 @@ c         else
 c          Ttry1 = tlast
 c         end if
          Ttry2 = Ttry1 + diffT
+	 clow = tol
+	 cupp = 1.e6
 c         print*, 'in PTfind, enter zbrac',Pi,Ttry1,Ttry2
          print*, 'in PTfind, enter cage',Pi,Ttry1,Ttry2
          ntry = 0
 c10       call zbract(entrop,Ttry1,Ttry2,succes)
-10       call caget(entrop,Ttry1,Ttry2,ires)
+10       call caget(entrop,Ttry1,Ttry2,clow,cupp,ires)
          ntry = ntry + 1
 c         print*, 'in PTfind, brackets',Pi,Ttry1,Ttry2,succes
          print*, 'in PTfind, brackets',Pi,Ttry1,Ttry2,ires
@@ -76,6 +79,7 @@ c         if (.not. succes) print*, 'in PTfind root finding failed',Pi
          tlast = Tisen
          Ti = Tisen
          print*, 'in PTfind, Pi,Ti',Pi,Ti
+         write(31,*) 'in PTfind, Pi,Ti',Pi,Ti
         end if
 
         if (hucalc) then
@@ -84,9 +88,11 @@ c         if (.not. succes) print*, 'in PTfind root finding failed',Pi
           call petsub(nnew,itersum,itwo)
           iphyflag = 1
           call physub(nnew,rho,wmagg,freeagg,2)
+	  thugo = Ti
           vhugo = 1./rho
           phugo = Pi
           ehugo = freeagg/wmagg + Ti*ent/wmagg - 1000.*Pi/rho
+	  tlast = thugo
 	  print*, 'ehugo calc',Pi,Ti,ehugo,vhugo,rho,1./rho,Pi,phugo,freeagg,ent,wmagg
           if (Pi .eq. 0.) return
          end if
@@ -95,21 +101,16 @@ c         if (.not. succes) print*, 'in PTfind root finding failed',Pi
          else
           Ttry1 = tlast
          end if
+c	 clow = thugo
+	 clow = 100.
+	 cupp = 1.e6
          Ttry2 = Ttry1 + diffT
-c         print*, 'in PTfind, enter zbrac',Ttry1,Ttry2
-         print*, 'in PTfind, enter cage',Ttry1,Ttry2
-         ntry = 0
-c20       call zbract(hugoniot,Ttry1,Ttry2,succes)
-20       call caget(hugoniot,Ttry1,Ttry2,ires)
-         ntry = ntry + 1
-         print*, 'in PTfind, brackets',Ttry1,Ttry2
-c         Thug = zbrentt(hugoniot,Ttry1,Ttry2,tol,succes)
-         Thug = zeroint(Ttry1,Ttry2,hugoniot,tol)
-         print*, 'in PTfind, solution',Thug
-c         if (.not. succes .and. ntry .lt. ntrymax) go to 20
-c         if (.not. succes) print*, 'in PTfind root finding failed (hugoniot)'
-         if (ires .eq. 0 .and. ntry .lt. ntrymax) go to 20
-         if (ires .eq. 0) print*, 'in PTfind root finding failed (hugoniot)'
+         print*, 'in PTfind, enter cage',Ttry1,Ttry2,clow,cupp
+         call caget(hugoniot,Ttry1,Ttry2,clow,cupp,ires)
+         print*, 'in PTfind, brackets',Ttry1,Ttry2,ires
+	 if (ires .lt. 1) Thug = tlast
+         if (ires .eq. 1) Thug = zeroint(Ttry1,Ttry2,hugoniot,tol)
+         if (ires .lt. 1) print*, 'WARNING: PTfind root finding failed (hugoniot)',ires
          tlast = Thug
          Ti = Thug
          print*, 'in PTfind (hugoniot), Ti',Ti

@@ -65,6 +65,7 @@
         etas = -gamma - 0.5*ratio*(2.*f + 1.)**2*bs
         detasdv = -gamma*q/Vi + 2.*bs*(1. + 2.*f)**(7./2.)*ratio/(3.*Vo) - bs*(1. + 2.*f)**(9./2.)*ratio**2/(6.*Vo)*(a + b*f)
 c        write(31,*) 'Vi,gamma,q,qp =',Vi,gamma,q,qp,1./ratio,f,a,0.5*b
+c        print*, 'Vi,f,wd1,gamma,q,qp =',Vi,f,wd1,gamma,q,qp,1./ratio,f,a,0.5*b
         if (g .eq. 0. .and. qo .eq. 0.) q = qo
 
         if (ityp .eq. 1) then

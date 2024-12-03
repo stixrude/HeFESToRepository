@@ -46,6 +46,7 @@ c	 if (pfix) fcalc = 0.
 	call cpu_time(start)
 	if (Pi .ne. Pold .or. Ti .ne. Told) then
 	 do 5 ispec=1,nspec
+C  Need the free energy of absent species to compute their affinity for possible addition in phaseadd and restore
 c	  if (absents(ispec)) go to 5
 	  gspeca(ispec) = gspec(ispec)
 	  vspeco(ispec) = volve
@@ -77,13 +78,18 @@ c	 write(31,*) (nnew(j),j=1,nnull)
 	volagg = 0.
         do 1 ispec=1,nspec
          cpa(ispec) = 0.0
-         if (absents(ispec)) go to 1
+c         if (absents(ispec)) go to 1
 	 wm = apar(ispec,3)
 	 wmagg = wmagg + n(ispec)*wm
-         call cp(ispec,n,chempot,rsum,volsum,smixi,smag)
+	 chempot = 0.
+	 rsum = 0.
+	 volsum = 0.
+	 smixi = 0.
+	 smag = 0.
+         if (.not. absents(ispec)) call cp(ispec,n,chempot,rsum,volsum,smixi,smag)
+c         call cp(ispec,n,chempot,rsum,volsum,smixi,smag)
          cpa(ispec) = gspeca(ispec)/1000. + chempot/1000.
 	 sspeca(ispec) = sspeco(ispec) + smixi + smag
-c	print*, 'in func',ispec,sspeco(ispec),smixi,smag,sspeca(ispec)
 	 vspeca(ispec) = vspeco(ispec) + volsum
 	 volagg = volagg + n(ispec)*vspeca(ispec)
 	 dhdtmol = dhdtmol + n(ispec)*cspeca(ispec)/1000.
@@ -112,9 +118,9 @@ c         func = func + n(ispec)*(cpa(ispec) + hcalc*Ti*sspeca(ispec)/1000.)
 c	 write(31,*) 'Chemical potentials',ispec,func,n(ispec),cpa(ispec)
 4       continue
 	func = func + hcalc*Ti*starg/1000.*wmagg - fcalc*Pi*wmagg/vtarg
-c	write(31,*) 'func = ',Pi,Ti,func,starg,vtarg,wmagg,hcalc,fcalc,dgdtmol,dhdtmol,hcalc*starg*wmagg,-fcalc*Pi*wmagg/vtarg
+c	write(31,*) 'func final = ',Pi,Ti,func,starg,vtarg,wmagg,hcalc,fcalc,dgdtmol,dhdtmol,hcalc*starg*wmagg,-fcalc*Pi*wmagg/vtarg
 c     &   ,nnew(nnull+nvet),nnew(nnull+nvep)
-c	write(31,*) 'func = ',Pi,Ti,func
+c	write(31,*) 'func final = ',Pi,Ti,func
 c  ,vtarg,wmagg,wmagg/vtarg,volagg,-fcalc*Pi*wmagg/vtarg,nnew(nnull+nvep)
 
 	fnagg = 0.

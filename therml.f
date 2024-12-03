@@ -72,7 +72,7 @@ c	print*, 'in therml',ispec,Fxs,Fel,Fig/1000.
 	 Sxs = Sxs - dteedt*aliq(i+1,lineart)*f**i/dfac(i)
 12	continue
 	ent = 1000.*Sxs + 1000.*Sel + Sig
-	write(31,*) 'Entropy',Ti,ent,1000.*Sxs+Sig
+c	write(31,*) 'Entropy',Ti,ent,1000.*Sxs+Sig
 
         Pxs = 0.
         do 7 i=1,nobm
@@ -144,6 +144,6 @@ c	  print*, i,j,aliq(i+1,j+1),f,theta,dtdt
 
 	Gsh = d1mach(3)
 	dGdT = d1mach(3)
-	
+
         return
         end

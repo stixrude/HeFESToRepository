@@ -6,10 +6,10 @@
         integer izero,ione,itwo,ithree
         common /concom/ unit,zermat,zervec,zero,one,two,three,pirad,hbok,izero,ione,itwo,ithree
 C  Fundamental constants from NIST http://physics.nist.gov/cuu/Constants/index.html
-        double precision, parameter :: cspeed = 2.99792458e10, hplanck = 6.6260693e-34,
-     &             boltzk = 1.3806505e-23,    avn = 6.0221415e23,
+        double precision, parameter :: cspeed = 2.99792458d10, hplanck = 6.6260693d-34,
+     &             boltzk = 1.3806505d-23,    avn = 6.0221415d23,
      &             hcok = hplanck*cspeed/boltzk, cmkm = 1.e5,
-     &             emass = 9.1093897e-31, bohrradius = 5.2917721067e-11
+     &             emass = 9.1093897d-31, bohrradius = 5.2917721067d-11
 C  Convert Joules to Calories from www.chemie.fu-berlin.de/chemistry/general/units_en.html
         double precision, parameter :: cal=4.1868
 C  Fundamental constants from NIST: http://physics.nist.gov

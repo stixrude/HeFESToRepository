@@ -2,6 +2,7 @@
 
 C  Account for shear softening in stishovite
 C  Theory of hellwigetal_03
+C  Delta is not part of the hellwigtetal_03 theory.  Delta models a discontinuous increase in the modulus at the transition as seen e.g. by karkietal_97e (but not by others).
 
 	double precision Pi,Ti,Gsh,Gbare
 	double precision Pcs,Pc,Cso,Delta,Ast,Cs
@@ -11,7 +12,7 @@ C  Theory of hellwigetal_03
         Pcs = 51.6 + 11.1*(Ti - 300.)/1000. ! carpenteretal_00, nomuraetal_10
         Pc = Pcs + 50.7                     ! carpenteretal_00
         Cso = 128*Pc/Pcs                    ! jiangetal_09
-        Delta = 100.                        ! karkietal_97e
+        Delta = 0.                          ! karkietal_97e
         if (Pi .lt. Pcs) then
          Ast = Cso*(Pc - Pcs)
          Cs = Cso - Ast/(Pc - Pi)

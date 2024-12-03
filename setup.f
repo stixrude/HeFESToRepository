@@ -33,31 +33,36 @@ C  Set universal constants including identity matrix
         nnull = nspec - nc
 
         if (nc .gt. nspec) then
-         print*, '********** ERROR **********'
-         print*, 'Number of constraints',nc
-         print*, 'exceeds number of species',nspec
-         print*, 'Try reducing number of components or '
-         print*, 'increasing number of phases present in initial guess'
-         print*, '********************'
+C  No solution is possible for the initial guess: the number of equations exceeds the number of variables in the linear problem (SLB11 Eq. 46)
+         print*, '************** ERROR ***************'
+         print*, 'Number of constraints               ',nc
+         print*, 'exceeds number of species           ',nspec
+         print*, 'Try reducing number of components or'
+         print*, 'increasing number of phases or species present in initial guess'
+         print*, '************************************'
          stop
         end if
 
         call sform(s,b,n1,q1,q2,nspec,nco,nc,ncs,nnull,nnulls,absents)
+	print*, 'in setup',nphpres,nco
         if (nphpres .gt. nco) then
-         print*, '********** ERROR **********'
-         print*, 'Phase Rule Violated'
-         print*, 'Number of phases',nphpres
-         print*, 'exceeds number of components',nco
-         print*, 'Try eliminating one or more phases'
-         print*, '********************'
-         stop
+C  No solution is possible for the initial guess.  However, the code may recover from phase rule violations.
+         print*, '************* WARNING *************'
+         print*, 'Phase Rule Violated in NPT ensemble'
+         print*, 'Number of phases                  ',nphpres
+         print*, 'exceeds number of components      ',nco
+         print*, 'Try increasing number of components or'
+	 print*, 'reducing the number of phases present in the intial guess'
+         print*, '***********************************'
         end if
         if (nnulls .gt. nnull) then
-         print*, '********** ERROR **********'
-         print*, 'Number of linearly independent components',nco - nnulls + nnull
+C  No solution is possible for the initial guess.  The phase assemblage does not span the bulk composition, or one or more components are linearly dependent.
+         print*, '****************** ERROR ******************'
+         print*, 'Number of linearly independent components  ',nco - nnulls + nnull
          print*, 'is less than the total number of components',nco
-         print*, 'Try eliminating one or more components'
-         print*, '********************'
+         print*, 'Try reducing number of components'
+         print*, 'or increasing numher of phases or species present in the initial guess'
+         print*, '*******************************************'
          stop
         end if
 
@@ -124,14 +129,21 @@ c        if (nT .eq. -3 .and. nP .ge. 0) then
 22      continue
 
         call dossetup
+C  Comment out hsetup for github
+c	call hsetup
         call nform(nnew,n,n1,q2,nspec,nnull)
 
 	zero = 0.
         if (adiabat) print*, 'Read in a temperature profile, the following increment will be added = ',superad
-        if (chcalc)  print*, 'Density and temperature are the independent variables.  Initial guess at the pressure = ',zero
+        if (chcalc)  print*, 'Density and temperature are the independent variables.  Initial guess at the pressure = ',superad
         if (adcalc)  print*, 'Pressure and entropy are the independent variables.  Initial guess at the temperature = ',superad
         if (adcalc .and. chcalc)  print*, 'Density and entropy are the independent variables.  
      &     Initial guess at the temperature = ',superad
+        if (adiabat) write(31,*) 'Read in a temperature profile, the following increment will be added = ',superad
+        if (chcalc)  write(31,*) 'Density and temperature are the independent variables.  Initial guess at the pressure = ',superad
+        if (adcalc)  write(31,*) 'Pressure and entropy are the independent variables.  Initial guess at the temperature = ',superad
+        if (adcalc .and. chcalc)  write(31,*) 'Density and entropy are the independent variables.  
+     &     Initial guess at the temperature = ',superad,' Initial guess at the pressure =',zero
 
         return
         end

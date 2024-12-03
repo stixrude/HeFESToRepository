@@ -205,7 +205,7 @@ C<--
           
 C Output
         if (ncall .eq. 1) then
-         write(99,'(a7,2a9,105a12)') 'Pi','depth','Ti',(sname(ispec)(1:9),ispec=1,nspec)
+         write(99,'(a7,2a11,105a14)') 'Pi','depth','Ti',(sname(ispec)(1:9),ispec=1,nspec),'Gibbs','Quality'
         end if
 c        write(7,*) 'Pressure, Temperature',Pi,Ti
 c        write(7,*) 'Solution = ',(nnew(i),i=1,nnull)
@@ -226,9 +226,10 @@ c         end if
          write(31,'(/,a23,i20)') 'Number of Iterations = ',iter
          write(31,*) 'Gibbs Free Energy = ',gibbs/1000.
          write(31,*) 'Quality = ',qual 
-         write(31,'(a11,35f8.4)') 'Solution   ',(nnew(i),i=1,nnull+iextra)
-         write(31,'(a11,35f8.4)') 'Derivatives',(xi(i),i=1,nnull+iextra)
+         write(31,'(a11,35f12.4)') 'Solution   ',(nnew(i),i=1,nnull+iextra)
+         write(31,'(a11,35f12.4)') 'Derivatives',(xi(i),i=1,nnull+iextra)
          write(31,*) (absents(i),i=1,nspec)
+         write(31,*) (absent(i),i=1,nph)
          write(31,*) 'nc,nco,ncs,nspec =',nc,nco,ncs,nspec
 c         write(7,200) Pi,Ti,(nprint(i),i=1,nspec),gibbs/1000.,qual
 c         write(31,'(a11,105f8.4)') 'Composition',(nprint(i),i=1,nspec),
@@ -252,7 +253,7 @@ c        if (iprint .ge. 1) then
 	   write(31,*) 'Exsolved phase ', Pi,Ti,phname(lph1)
 31	 continue
          gprint = gibbs/1000.
-         if (abs(gprint) .gt. 10.) gprint = gibbs/10000.
+c         if (abs(gprint) .gt. 10.) gprint = gibbs/10000.
          write(99,700) Pi,depth(Pi),Ti,(nprint(i),i=1,nspec),
      &    gprint,qualwrite
          if (lphrep1 .ne. 0 .and. lphrep2 .ne. 0) then
@@ -275,5 +276,5 @@ c          write (99,300) 'Poor Solution',Pi,Ti,qual
 200     format(f8.2,f8.1,35f8.4)
 300     format(a13,3f12.5)
 c700     format(f7.2,f9.2,f9.2,105f9.5)
-700     format(f7.2,f9.2,f9.2,105f12.8)
+700     format(f7.2,f11.2,f11.2,105f14.8)
         end

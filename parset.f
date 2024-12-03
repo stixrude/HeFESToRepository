@@ -13,8 +13,9 @@
 	double precision gam,qo,be,ge,q2a2,htl,go,gop,got,a,asp,b,bsp,det,dparc,flimm,flow,fsp,fspm,fspp
 	double precision fupp,par,parold,swap,vlow,vsp,vupp,vsplow,vspupp,detsp
         double precision Ko,Kop,Kopp
-	double precision f1,f2,v1,v2,c
+	double precision f1,f2,v1,v2,c,fextremum,vextremum
         double precision apar(nspecp,nparp)
+	double precision, parameter :: vsquaredminimum = 0.1
 	double precision, parameter :: Tsmall=1.e-5
 c       double precision, parameter :: dpar =  30.0      !  Percentage Error in q
 c       double precision, parameter :: dpar =  10.0      !  Percentage Error in theta
@@ -87,23 +88,29 @@ c       par = parold*(1.0 + dparc/100.)
         end if
         gam = par
 
-	if (apar(ispec,51) .ne. 0.) return
+	if (apar(ispec,53) .ne. 0.) return
 
 C  Computed quantities
 
 C  Volume limits set by real vibrational frequency
 C  Find roots of Eq. 41 SLB05
 C  Identify domain of positive v^2
-	c = 1.0
+	apar(ispec,51) = 0.
+	apar(ispec,52) = 0.
+	if (htl .ne. 0.) then
+C  Not a solid.  Eq. 41 does not apply
+	 go to 11
+	end if
+	vupp = 1.d+15
+	vlow = 1.d-15
+	c = 1.0 - vsquaredminimum
         b = 6.*gam
         a = 0.5*gam*(36.*gam - 18.*qo - 12.)
 	det = b*b - 4.*a*c
-	vupp = 1.d+15
-	vlow = 1.d-15
-	if (htl .ne. 0.) then
-C  We have a liquid and Eq. 41 does not apply
-	 go to 10
-	end if
+	fextremum = -b/(2.*a)
+	vextremum = Vo*(2.*fextremum + 1.)**(-3./2.)
+	if (fextremum .le. -0.5) vextremum = vupp
+	print*, 'vibrational limits: gam,qo,a,b,c,det',gam,qo,a,b,c,det,fextremum,vextremum
 	if (det .lt. 0.) then
 C  No roots: domain of positive v^2 is unbounded.
 	 go to 10
@@ -131,8 +138,14 @@ C  Only a lower bound
 	vupp = Vo*(2.*min(f1,f2) + 1.)**(-3./2.)
 	vlow = Vo*(2.*max(f1,f2) + 1.)**(-3./2.)
 10	continue
+C  Require vibrational frequency to increase with increasing f (decreasing V)
+	if (fextremum .gt. 0.) vlow = max(vlow,vextremum)
+	if (fextremum .lt. 0.) vupp = min(vupp,vextremum)
 	apar(ispec,51) = max(vlow,Vo/10.) + vsmall
 	apar(ispec,52) = min(vupp,Vo*10.) - vsmall
+	print*, 'vibrational limits: f1,f2,vlow,vupp,apar(ispec,51),apar(ispec,52),fextremum,vextremum'
+     &   ,f1,f2,vlow,vupp,apar(ispec,51),apar(ispec,52),fextremum,vextremum
+11	continue
 
 C  Spinodal instabilities at T=T_0
 C  Find roots of Eq. 32 SLB05
@@ -172,8 +185,11 @@ C  One positive root and one negative root: upper and lower bounds (Kop<4)
 20	continue
 	apar(ispec,53) = max(vsplow,Vo/10.) + vsmall
 	apar(ispec,54) = min(vspupp,Vo*10.) - vsmall
-	write(31,*) 'V bounds',ispec,Kop,f1,f2,apar(ispec,51),apar(ispec,52),apar(ispec,53),apar(ispec,54),
-     &   a,b,det,vlow,vupp,asp,bsp,detsp,vsplow,vspupp
+C  Relax upper bound on volume for liquids
+c	if (htl .eq. 1) apar(ispec,54) = Vo*1000.
+	write(31,'(a34,i5,99f12.5)') 'V bounds: vibrational and spinodal'
+     &   ,ispec,apar(ispec,51),apar(ispec,52),apar(ispec,53),apar(ispec,54),f1,f2
+c     &   ,a,b,det,vlow,vupp,asp,bsp,detsp,vsplow,vspupp
 
         return
 100     format(a19,4f13.5)

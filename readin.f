@@ -21,18 +21,24 @@
         double precision wreg(nphasep,nsitep,nspecp,nspecp),vreg(nphasep,nsitep,nspecp,nspecp)
 	double precision fmom(24)
 	double precision wox(natomp),stox(natomp),wcomp(natomp),stcomp(natomp)
+        character(8)  :: date
+        character(10) :: time
+        character(5)  :: zone
+        integer,dimension(8) :: values
         common /names/ phname,sname
         common /state/ apar(nspecp,nparp),Ti,Pi
         common /regcom/ wreg,vreg
         common /atomc/ stox,wox,wcomp,stcomp,atom,comp
         common /mag/ icfe
-
         integer, parameter :: npar=43
         integer, parameter :: lmax = 1000
         data ncall/0/
+
+        CALL DATE_AND_TIME(DATE, TIME, ZONE, VALUES)
         blank = ' '
         lox = .false.
         coxide = 'oxides'
+	print*, 'Start readin'
         write(28,'(a5,12a12)') 'spec','Telastic','thetam3','thetam2','thetam1','thetap0',
      &  'thetap1','thetap2','thetap3','thetap4','thetap5','thetap6'
 
@@ -41,6 +47,7 @@
         open(31,file='qout',status='unknown')
         open(71,file='landau',status='unknown')
 c        write(71,'(a5,7a12)') 'Species','Temperature','Gconf','Sconf','Vconf','Qorder','Tc'
+        write(31,'(a,2x,a,2x,a,2x,a)') 'Date:',date,'Time:',time
         write(31,*) 'Echo input'
         write(31,*) '-----------------Begin control file-----------------'
         do 99 i=1,lmax
@@ -110,9 +117,11 @@ c        read(51,'(a2,6x,2f12.5,i5)') xatom,binit(i),bfinal(i),nbulk
         read(51,'(a80)') dirname
         ndname = len_trim(dirname)
         print*, dirname,ndname
+	write(56,'(a,2x,a,2x,a,2x,a,2x,a,2x,a)') 'Parameter set:',dirname(1:ndname),'Date:',date,'Time:',time
         read(51,*) nspec
         do 43 iphs=1,nphasep
 43      phname(iphs) = blank
+	nphpres = 0
         do 4 k=1,nspecp
          if (ispec .eq. nspec) go to 30
          read(51,'(a)') fname
@@ -122,6 +131,7 @@ c        read(51,'(a2,6x,2f12.5,i5)') xatom,binit(i),bfinal(i),nbulk
           read(51,*) fname,phname(iph)
           read(51,*) zeror
           if (zeror .eq. 0.0) absent(iph) = .true.
+	  if (zeror .ne. 0.0) nphpres = nphpres + 1
           go to 4
          end if
          ispec = ispec + 1

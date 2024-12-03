@@ -15,7 +15,7 @@
 	double precision aliq(nparp,nparp),aliqc,cliq0,cliq1,cliq2,tee,dteedt,acof,bcof
 	double precision betaig,daktdvig,Kigp
 	double precision volve,entve,cpve,bkve
-        double precision, parameter :: Tglass = 1500.0
+        double precision, parameter :: Tglass = 100.0
         common /volent/ volve,entve,cpve,bkve
         common /state/ apar(nspecp,nparp),Ti,Pi
 	common /liqc/ aliqc(nparp,nparp),mfit,nobm,noth,sfix,vofix,cvfix,maxij,lineart,nbm,noln

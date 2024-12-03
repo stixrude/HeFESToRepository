@@ -57,6 +57,7 @@
 	double precision vwork(nspecp,nspecp),checkt,checkp,ddot,wwork(nspecp),dndttest(nspecp)
 	double precision btiso,bsiso,cpiso,cviso,alpiso,gamiso,phasebuoyancyparameter,deltaent,deltavol,ClapeyronSlope
 	double precision Tro2,ao2,bo2,co2,do2,ho2gas,so2gas,go2gas,STro2
+        logical spinod(nspecp),spinph(nphasep)
 	double precision, parameter :: rhomantle = 4422.76, gmantle = 10.0, hmantle = 2891000.
 	double precision, parameter :: pmantle = rhomantle*gmantle*hmantle/1.e9
 	logical chcalc,adcalc,hucalc
@@ -66,6 +67,11 @@
 	character*2 compstand(noxides)
 	integer ip(ncompp)
         double precision, parameter :: Tsmall = 1.e-5, asmall=1.e-15, nsmall=1.e-15, dfdpsmall=1.e-13
+        character(8)  :: date
+        character(10) :: time
+        character(5)  :: zone
+        integer,dimension(8) :: values
+        common /spinc/ spinod,spinph
         common /names/ phname,sname
         common /state/ apar(nspecp,nparp),Ti,Pi
         common /prop/ vol,Cap,Cv,gamma,K,Ks,alp,Ftot,ph,ent,deltas,
@@ -80,22 +86,30 @@ C                       SiO2   MgO    FeO    CaO    AlO1.5   NaO0.5   CrO1.5
 	data compstand/'Si',  'Mg',  'Fe',  'Ca',  'Al',    'Na',     'Cr'/
         data ncall/0/
 	data gphysub/0.0/
+	CALL DATE_AND_TIME(DATE, TIME, ZONE, VALUES)
 	call cpu_time(start)
         ncall = ncall + 1
         ent = 0.0
 	iphyflag = 1
+	do 3 ispec=1,nspec
+	 if (spinod(ispec) .and. .not. absents(ispec)) write(31,*) 'WARNING: Spinodally unstable species present',
+     &    Pi,Ti,ispec,absents(ispec),spinod(ispec),n(ispec)
+3	continue
 
 C Headers
         if (ncall .eq. 1) then
         phname(nphasep) = '                    '
-        write(89,'(a4,a7,a8,12a11)') 'spec','Pi','Ti','Enthalpy','Entropy','Cp','Gibbs','Volume','Smix','Sconf','CV'
-        write(66,'(99a12)') 'Pi','depth','Ti',(phname(iph)(1:8),iph=1,nph)
+c	write(56,'(a,2x,a,2x,a,2x,a,2x,a,2x,a)') 'Parameter set:',dirnamesave(1:ndnamesave),'Date:',date,'Time:',time
+	write(56,'(99a25)') 'P(GPa)','depth_PREM(km)','T(K)','rho(g/cm^3)','VB(km/s)','VS(km/s)','VP(km/s)','VSQ(km/s)'
+     &   ,'VPQ(km/s)','H(kJ/g)','S(J/g/K)','alpha(1e5_K^-1)','cp(J/g/K)','KS(GPa)','Qs(-)','Qp(-)','rho_0(g/cm^3)','dominant_phase'
+        write(89,'(a4,a7,a9,12a14)') 'spec','Pi','Ti','Enthalpy','Entropy','Cp','Gibbs','Volume','Smix','Sconf','CV'
+        write(66,'(99a16)') 'Pi','depth','Ti',(phname(iph)(1:8),iph=1,nph)
         write(661,'(99a12)') 'Pi','depth','Ti',(phname(iph)(1:8),iph=1,nph)
         write(67,*) '  Pi    depth   Ti',
      &   phname(nphasep)(1:7),(phname(iph)(1:8),iph=1,nph)
-        write(58,'(99a12)') 'Pi','depth','Ti','rho','KS','G','VBh','VSh','VPh','KSr','Gr','VBr','VSr','VPr'
+        write(58,'(99a16)') 'Pi','depth','Ti','rho','KS','G','VBh','VSh','VPh','KSr','Gr','VBr','VSr','VPr'
      &                                                                        ,'KSv','Gv','VBv','VSv','VPv'
-        write(59,'(99a14)') 'Pi','depth','Ti','Vol','KS','KT','alpha','Heat C','thet','g','q','Velocity','Ppart1','Ppart2'
+        write(59,'(99a16)') 'Pi','depth','Ti','Vol','KS','KT','alpha','Heat C','thet','g','q','Velocity','Ppart1','Ppart2'
         write(61,'(a6,a9,a9,5x,99a12)') 'Pi','depth','Ti',
      &   ('rh'//phname(iph)(1:11),iph=1,nph)
         write(62,*) '  Pi    depth   Ti',
@@ -235,9 +249,9 @@ c          if (ispec .ge. iophase(iph) .and. ispec .le. iophase(iph)+mophase(iph
 	  end if
 157	 continue
 	nnullfast = 1
-	if (nfast .eq. nfastold) go to 156
+	if (nfast .eq. nfastold) go to 1560
 	nfastold = nfast
-	write(31,*) 'Compute fast terms for phase',phname(iph),nfast,nnullfast
+	write(31,'(a29,a10,2i5)') 'Compute fast terms for phase ',phname(iph),nfast,nnullfast
 C  Project temperature derivative of the chemical potential dm/dt
 	call dgemv('Transpose q2fast',nspec,nnullfast,one,q2,nspecp,dmdt,ione,zero,dmdtp,ione)
 C  Project pressure derivative of the chemical potential dm/dp
@@ -260,6 +274,7 @@ c	write(31,*) 'dndpfastphase',(dndpfastphase(ispec),ispec=1,nspec)
 	 dndpfast(ispec) = dndpfast(ispec) + dndpfastphase(ispec)
 160	continue
 
+1560	continue
 	do 159 i=1,nspecp
 	 do 159 j=1,nspecp
 	  q2(i,j) = q2save(i,j)
@@ -269,6 +284,7 @@ c	write(31,*) 'dndpfastphase',(dndpfastphase(ispec),ispec=1,nspec)
 
 c	write(31,*) 'dndtfast',(dndtfast(ispec),ispec=1,nspec)
 c	write(31,*) 'dndpfast',(dndpfast(ispec),ispec=1,nspec)
+
 
         do 1 iph=1,nph
 
@@ -340,8 +356,10 @@ c	print*, 'in physub',ispec,n(ispec),sspeca(ispec),entagg
 c	write(31,*) 'volumes in physub',ispec,n(ispec),vspeca(ispec),vol,volsum,volxs
           wmagg = wmagg + n(ispec)*wm
           wmph = wmph + n(ispec)*wm
-          if (Ks .gt. 0.)  bukph = bukph + n(ispec)*vol/Ks
-          if (K .gt. 0.)   buktph = buktph + n(ispec)*vol/K
+c          if (Ks .gt. 0.)  bukph = bukph + n(ispec)*vol/Ks
+c          if (K .gt. 0.)   buktph = buktph + n(ispec)*vol/K
+          bukph = bukph + n(ispec)*vol/Ks
+          buktph = buktph + n(ispec)*vol/K
           gshph = gshph + n(ispec)*vol/Gsh
 c	write(31,*) 'gshph calc',iph,ispec,n(ispec),vol,Gsh,gshph
           volph = volph + n(ispec)*volxs
@@ -379,8 +397,8 @@ c	   write(31,*) iiron,Giron(iiron),Gironmin,Gwu
 	   Gironmin = min(Gironmin,Giron(iiron))
 223	  continue
           if (iprint .eq. 1) then
-                write(89,'(i3,a4,f7.2,f8.2,12f11.4)') ispec,sname(ispec),Pi,Ti,Etot/1000.,ent,Cap
-     ;     ,Gtot/1000.,vol,smixi,sconf,Cv,thet
+c                write(89,'(i3,a4,f7.2,f9.2,12f14.4)') ispec,sname(ispec),Pi,Ti,Htot/1000.,ent,Cap
+c     ;     ,Gtot/1000.,vol,smixi,sconf,Cv,thet
 c                write(89,'(i3,a4,f7.2,f8.2,12f11.4)') ispec,sname(ispec),Pi,Ti,Gtot/1000.-Pi*vol,ent,Cap
 c     ;     ,Gtot/1000.,vol,smixi,sconf,Cv,thet
 c     ;    write(89,'(i4,f7.2,f8.2,22f11.4)') ispec,Pi,Ti,Etot/1000.,ent,Cap
@@ -644,11 +662,11 @@ c       write(599,500) Pi,depth(Pi),Ti,vol,baggh,btaggh,1.e5*alpagg,cpagg*wmagg,
 c     &   -1000.*alpagg*baggh*delagg,1000.*dgdtagg,-dlnvsdt*1.e5,-dlnvpdt*1.e5,deltas
 c       write(59,'(99f14.5)') Pi,depth(Pi),Ti,volagg,baggh,btaggh,1.e5*alpagg,cvagg*wmagg,
 c     &   thet,gruagg,qq,Vdeb,ph,pzp,tmelt
-       write(59,'(99f14.5)') Pi,depth(Pi),Ti,volagg,bsiso,btiso,1.e5*alpiso,cpiso,
+       write(59,'(99f16.5)') Pi,depth(Pi),Ti,volagg,bsiso,btiso,1.e5*alpiso,cpiso,
      &   thet,gamiso,qq,Vdeb,ph,pzp,tmelt
         write(57,500) Pi,depth(Pi),Ti,volagg,fn,zu,1000.*Vdebold,gruagg,qq,wmav,epsilon,cvagg*wmagg/(3.*fnagg*Rgas)
      &    ,tcalagg,gamdeb,fn,fnph,fnagg,Cv/(3*fn*Rgas),thet
-        write(58,'(99f12.5)') Pi,depth(Pi),Ti,rho,baggh,gaggh,Vbh,Vsh,Vph,baggr,gaggr,Vbr,Vsr,Vpr,baggv,gaggv,Vbv,Vsv,Vpv
+        write(58,'(99f16.5)') Pi,depth(Pi),Ti,rho,baggh,gaggh,Vbh,Vsh,Vph,baggr,gaggr,Vbr,Vsr,Vpr,baggv,gaggv,Vbv,Vsv,Vpv
 c     &   ,Vshasha,Vphasha,Vshashp,Vshashm,Vphashp,Vphashm,Vdeb
 c     &   ,vsmin,vsmax,vpmin,vpmax
         write(61,500) Pi,depth(Pi),Ti,(exp(log(rhopha(iph)-asmall)),iph=1,nph)
@@ -774,11 +792,10 @@ c	print*, (stcomp(ic),ic=1,nco)
 
 	call cpu_time(finish)
 	gphysub = gphysub + finish - start
-	write(31,*) 'time in physub',gphysub,ncall
+	write(31,*) 'cumulative time in physub',gphysub,ncall
 
         return
-500     format(f6.2,f9.2,f9.2,35f12.5)
-c700     format(f7.3,f9.3,f9.2,105f8.4)
-700     format(99f12.5)
+500     format(f7.2,f9.2,f9.2,35f16.5)
+700     format(99f16.5)
 800     format(a5,24f13.7)
         end

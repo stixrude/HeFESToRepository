@@ -21,9 +21,9 @@
 	To = nnew(nnull+nvet)
 	val = func(nnew)
 
-	Tfeas = log(To) + (starg*wmagg - sfunc(x))/(To*dsdtmol)
-	Tfeas = min(exp(Tfeas),Tspin(int))
-c	write(31,*) 'Tfeas = ',Tfeas,To,sfunc(x),starg,wmagg,starg*wmagg,dsdtmol
+	Tfeas = log(To) + (starg*wmagg - sfunc(To))/(To*dsdtmol)
+	Tfeas = exp(Tfeas)
+	if (Tspin(int) .ne. 0.) Tfeas = min(exp(Tfeas),Tspin(int))
 	iter = iter + 1
 	if (iter .gt. itermax) then
 	 write(31,*) 'WARNING: Tlfeas not converging',Tfeas,nnew(nnull+nvet)

@@ -11,34 +11,53 @@ C  Add absolute lower and upper limits on brackets
 	double precision, parameter :: gold=1.618
 	integer, parameter :: itmax=100
 
-	if (a .ge. b) stop 'No initial range in cage'
-	if (a .lt. clow) stop 'initial guess violates lower bound'
-	if (b .gt. cupp) stop 'initial guess violates upper bound'
+	ires = 0
+c	if (a .ge. b) stop 'No initial range in cage'
+c	if (a .lt. clow) stop 'initial guess violates lower bound'
+c	if (b .gt. cupp) stop 'initial guess violates upper bound'
+	if (a .ge. b) then
+c	 print*, 'No initial range in cage'
+	 return
+	end if
+	if (a .lt. clow) then
+c	 print*, 'initial guess violates lower bound'
+	 return
+	end if
+	if (b .gt. cupp) then
+c	 print*, 'initial guess violates upper bound'
+	 return
+	end if
 	ires = 1
 	iter = 0
+c	print*, 'In cage',a,b,clow,cupp,ires
 	fa = func(a)
 	fb = func(b)
 c	write(*,*) a,b,fa,fb
+	at = a
+	bt = b
 	do 1 i=1,itmax
 	 if (fa*fb .lt. 0.) return
 	 if (abs(fa) .lt. abs(fb)) then
-	  at = a + gold*(a - b)
-	  if (at .lt. clow) then
+c	  at = a + gold*(a - b)
+	  if (at .le. clow) then
 	   ires = -1
 	   return
 	  end if
+	  at = max(a + gold*(a - b),clow)
 	  a = at
 	  fa = func(a)
 	 else
-	  bt = b + gold*(b - a)
-	  if (bt .gt. cupp) then
+c	  bt = b + gold*(b - a)
+	  if (bt .ge. cupp) then
 	   ires = -2
 	   return
 	  end if
+	  bt = min(b + gold*(b - a),cupp)
 	  b = bt
 	  fb = func(b)
 	 end if
 c	 write(31,*) i,a,b,fa,fb
+c	 print*, 'cage',i,a,b,clow,cupp,fa,fb,ires
 1	continue
 	ires = 0
 

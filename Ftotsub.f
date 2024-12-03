@@ -2,8 +2,9 @@
 
         include 'P1'
         include 'const.inc'
-        include 'theory.inc'
+	include 'theory.inc'
 
+        character*80 phname(nphasep),sname(nspecp)
 	integer ispec,ibv,ied,izp
 	double precision vi,ftot,a3,a4,a5,alplan,anh,apar,be,beta,betlan,cp,cplan,cpve,cv,cvo,d,detasdv
 	double precision entve,etas,f,fac,fbm,fel,fn,fo,fpv,fth,ftho,gam,gamma,gammo,ge,glan,go,gop,got,htl
@@ -12,8 +13,10 @@
 	double precision wolo,wou,wouo,ws1,ws1o,ws2,ws2o,ws3,ws3o,xo,xt,zu
 	double precision Etherm,Ctherm,Ftherm
         double precision Ko,Kop,Kopp,Kc,Kth,K,alp,bkve,volnl
+	double precision un,pn,kn,kpn
 	common /volent/ volve,entve,cpve,bkve
         common /state/ apar(nspecp,nparp),Ti,Pi
+        common /names/ phname,sname
         d = 1.e-6
 
         call parset(ispec,apar,fn,zu,wm,To,Fo,Vo,Ko,Kop,Kopp,
@@ -65,6 +68,14 @@ C Birch-Murnaghan
 
         pzp = 0.0
         if (abs(izp) .eq. 1) pzp = izp*0.001*(9./8.)*fn*Rgas*thet*gamma/Vi
+
+C  Ice VII-X contribution
+        un = 0.
+        pn = 0.
+        kn = 0. 
+	kpn = 0.
+        if (sname(ispec)(1:4) .eq. "ice7") call icebcc(Vi,un,pn,kn,kpn)
+
         ph = .001*(gamma/Vi)*(uth - uto)
         Kth = (gamma + 1. - q)*(ph + pzp) - .001*(gamma**2/Vi)*
      &        (Ti*Cv - To*Cvo)
@@ -73,19 +84,6 @@ C Birch-Murnaghan
         Cp = Cv*(1. + fac)
         alp = .001*gamma*Cv/(Vi*K)
 
-C  Fluid
-        if (htl .ne. 0.) then
-c         gamma = gammo + gammo*qo/Vo*(Vi-Vo)
-c         q = Vi/gamma*gammo*qo/Vo
-c        thet = theo*exp(-(gammo-gammo*qo)*log(Vi/Vo) - (gamma-gammo))
-         Vx = 77.8
-         Vx = Vo
-         gamma = gammo + gammo*qo/Vx*(Vi-Vx)
-         q = Vi/gamma*gammo*qo/Vx
-         thet = theo*exp(-(gammo-gammo*qo)*log(Vi/Vx) - (gamma-gammo))
-         Fth = fn*Rgas*Ti*3.*htl*(log(thet/Ti) - 1./3.)
-         Ftho = fn*Rgas*To*3.*htl*(log(thet/To) - 1./3.)
-        end if
         beta = be*(Vi/Vo)**(ge)
 	entve = (uth - Fth)/Ti + beta*Ti
 	if (Ti .le. 0.) entve = 0.
@@ -94,9 +92,9 @@ c        thet = theo*exp(-(gammo-gammo*qo)*log(Vi/Vo) - (gamma-gammo))
         Fel = -(beta/2.)*(Ti*Ti - To*To)
         Ftot = 1000.*Fo + Fbm + Fth - Ftho + Fpv + Fel
 
-c	print '(a8,99f16.5)', 'Ftotsub',Pi,Vi,Ti,thet,theo,gamma,gammo,q,Fth,Ftho,uth,uto,Fpv,Ftot
+c	print '(a8,99f16.5)', 'Ftotsub',Pi,Vi,Ti,thet,theo,gamma,gammo,q,Fth,Ftho,Fth-Ftho,uth,uto,Fpv,Ftot,Ftot-Fpv
 
-C Landau contributions
+C Landau and Ice VII-X contributions
 C Choose: landau for inv251010 and earlier, landauqr for later
 	if (iltyp .eq. 1) then
 	 call landauqr(ispec,Vi,qorder,Tc,glan,cplan,alplan,betlan,slan,vlan)
@@ -107,12 +105,12 @@ C Choose: landau for inv251010 and earlier, landauqr for later
 	end if
 	volnl = Vi
 	Vi = Vi + vlan
-        Ftot = Ftot + glan
+        Ftot = Ftot + glan + un
 	volve = Vi
 	entve = entve + slan
 	cpve = Cp + cplan
 	bkve = 1./(1./K + betlan)
-	bkve = Vi/volnl/(1./K + betlan)
+	bkve = Vi/volnl/(1./K + betlan) + kn
 c	print*, 'in Ftotsub',(uth-Fth)/Ti,beta*Ti,slan,entve
         
         return

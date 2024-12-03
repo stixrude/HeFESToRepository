@@ -27,7 +27,7 @@ c       print*, 'in entrop',Ti
         ehug = freeagg/wmagg + Ti*ent/wmagg - 1000.*Pi/rho
         hugoniot = ehug - ehugo - 1000.*0.5*(vhugo - 1./rho)*(Pi + phugo)
 
-c        print '(a11,15f15.5)', 'in hugoniot',Ti,hugoniot,ehug,ehugo,vhugo,rho,1./rho,Pi,phugo,freeagg,ent,wmagg
+        print '(a11,15f15.5)', 'in hugoniot',Pi,Ti,hugoniot,ehug,ehugo,vhugo,rho,1./rho,phugo,freeagg,ent,wmagg
 
         return
         end

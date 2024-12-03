@@ -6,6 +6,7 @@ C  Reference state is ORDERED.
 C  Note that in this formulation, qorder may exceed unity.  This may be problematic at very high pressure where e.g. quartz may become more stable than stishovite.
 C  For now I have fixed this by limiting the value of qorder to qmax (1 July, 2016)
 C  Reduce qmax from 2 to 1.5 (2 April, 2022).  The reason is that with qmax=2, neph is stabilized in pyrolite at P>400 GPa along a 1600 K adiabat (conditions relevant for super-Earths).
+C  Limit Tc instead of q.  The reason is that Tc increases without bound with increasing P, so glan, which goes like -Tc, decreases without bound.  Limit Tc/Tco<=10. (July, 2024)
 
         include 'P1'
         include 'const.inc'
@@ -18,7 +19,8 @@ C  Reduce qmax from 2 to 1.5 (2 April, 2022).  The reason is that with qmax=2, n
 	double precision t,gfunc,dgdt,d2gdt2,afe,bfe,cfe,ntot,x,p,glansave
         common /state/ apar(nspecp,nparp),Ti,Pi
 	common /mag/ icfe
-	double precision, parameter :: qmax=2.
+	double precision, parameter :: qmax=1.5
+	double precision, parameter :: Tcmax=10.
 
 	ntot = 0.
 	iph = lphase(ispec)
@@ -66,11 +68,12 @@ c	 return
 c	end if
 
         Tc = Tco + vmax/(0.001*smax)*Pi
+	if (Tc .gt. Tcmax*Tco) Tc = Tcmax*Tco
 
 	qorder = 0.
 	if (Ti .le. Tc) then
          qorder = ((Tc - Ti)/Tco)**(1./4.)
-	 if (qorder .gt. qmax) qorder = qmax
+c	 if (qorder .gt. qmax) qorder = qmax
          cplan = smax*Ti/(2.*Tco*qorder**2)
          alplan = vmax/Vi/(2.*Tco*qorder**2)
          betlan = vmax/Vi*vmax/(0.001*smax)/(2.*Tco*qorder**2)

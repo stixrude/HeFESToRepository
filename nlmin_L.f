@@ -18,6 +18,7 @@
              integer*8 opt,local_opt
 	     parameter (maxeval=1000)
 	     double precision, parameter :: Tsmall = 1.e-5, eps=1.e-8
+c	     double precision, parameter :: Tsmall = 1.e-5, eps=1.e-10
              common /funcom/ ncall
         common /nlbounds/ palb,paub,pabounds
         common /tfindc/ tlast,vtarg,starg,phugo,vhugo,ehugo,dvdpmol,dsdtmol,dhdpmol,dhdtmol,wmagg,chcalc,adcalc,hucalc,nvet,nvep
@@ -39,7 +40,7 @@ C  Bounds
 	 if (adcalc .or. chcalc) then
              call nlo_get_lower_bounds(ires, opt, lb)
              call nlo_get_upper_bounds(ires, opt, ub)
-	     call Prange(Psmall,Plarge)
+	     if (chcalc) call Prange(x(nnull+nvep),Psmall,Plarge)
 	     if (adcalc) lb(nnull+nvet) = Tsmall
 	     if (adcalc .and. Tspin(ncall) .ne. 0.) ub(nnull+nvet) = Tspin(ncall)
 	     if (chcalc) lb(nnull+nvep) = Psmall
@@ -59,7 +60,8 @@ c	  write(31,*) 'pabounds',i,lb(i),ub(i)
          call nlo_set_upper_bounds(ires, opt, ub)
 	end if
 	  
-c	write(31,*) 'T Bounds',lb(ndim),ub(ndim),Tspin(ncall),ndim,nvet,adcalc
+	if (adcalc) write(31,*) 'T Bounds',lb(ndim),ub(ndim),Tspin(ncall),ndim,nvet,adcalc
+c	if (adcalc) print*, 'T Bounds',lb(ndim),ub(ndim),Tspin(ncall),ndim,nvet,adcalc
 
 	        do 1 i=1,nspecp
                  do 1 j=1,nspecp
@@ -127,10 +129,11 @@ c             call nlo_set_maxeval(ires, local_opt, maxeval)
      
              call nlo_optimize(ires, opt, x, minf)
              if (ires.lt.0) then
-c               write(31,'(a22,2i5,99f12.5)') 'WARNING: nlopt failed!',ires,iter,Pi,Ti,vtarg,starg
+              if (ires .ne. -4) write(31,'(a22,2i5,999f12.5)') 'WARNING: nlopt failed!',ires,iter,Pi,Ti,vtarg,starg,minf	
+c               write(31,'(a22,2i5,999f12.5)') 'WARNING: nlopt failed!',ires,iter,Pi,Ti,vtarg,starg,minf
 c     &          ,(x(i),i=1,ndim),(lb(i),i=1,ndim),(ub(i),i=1,ndim)
-               write(31,*) 'WARNING: nlopt failed!',ires,iter,Pi,Ti,vtarg,starg
-     &          ,(x(i),i=1,ndim),(lb(i),i=1,ndim),(ub(i),i=1,ndim)
+c               write(31,*) 'WARNING: nlopt failed!',ires,iter,Pi,Ti,vtarg,starg
+c     &          ,(x(i),i=1,ndim),(lb(i),i=1,ndim),(ub(i),i=1,ndim)
              else
 c                write(31,*) 'nlopt found min at ', (x(i),i=1,ndim)
 c                write(31,*) 'nlopt min val = ', minf

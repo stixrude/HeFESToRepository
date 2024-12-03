@@ -1,4 +1,4 @@
-	double precision function sfunc(x)
+	double precision function sfunc(To)
 
         include 'P1'
         include 'chem.inc'
@@ -6,7 +6,7 @@
 
 	integer ispec
 	double precision entagg
-	double precision x(nspecp)
+	double precision To
 
         entagg = 0.
         do 2 ispec=1,nspec

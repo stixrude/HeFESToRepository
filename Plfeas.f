@@ -29,6 +29,8 @@ c	 write(31,*) 'Calling pressure(l) from Plfeas',Pi,Ti,wmagg,vtarg,wmagg
 	 end if
 	 nnew(nnull+nvep) = Po
 	 val = func(nnew)
+	 Pfeas = Po
+	 return
 	end if
 
 C  If there are multiple species find feasible pressure iteratively using calcuated value of dvdpmol of the assemblage

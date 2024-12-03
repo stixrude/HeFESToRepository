@@ -1,10 +1,12 @@
-            subroutine nlmin_VL(x,xlow,xupp,minf)
+            subroutine nlmin_VL(x,xlow,xupp,minf,sign,ires)
 	include 'P1'
 	include 'numpar.inc'
+C  If sign>0 minimize the function
+C  If sign<0 maximize the function
 
 	double precision xlow,xupp
             external myvoll
-             double precision  x(nspecp), minf
+             double precision  x(nspecp), minf,sign
              integer ires
              integer*8 opt
              integer, parameter :: maxeval=500
@@ -12,7 +14,8 @@
 
 c             call nlo_create(opt, NLOPT_GN_ISRES, 1)
              call nlo_create(opt, NLOPT_LN_COBYLA, 1)
-             call nlo_set_min_objective(ires, opt, myvoll, 0)
+             if (sign .gt. 0) call nlo_set_min_objective(ires, opt, myvoll, 0)
+             if (sign .lt. 0) call nlo_set_max_objective(ires, opt, myvoll, 0)
 
 c	call nlo_set_lower_bounds1(ires, opt, 1.e-15)
 c	call nlo_set_upper_bounds1(ires, opt, 1.e+5)

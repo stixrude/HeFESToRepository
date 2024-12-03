@@ -1,4 +1,4 @@
-        subroutine tracesub(n,iphase,mphase,nspec,nph,absent,absents,add)
+        subroutine tracesub(n,iphase,mphase,nspec,nph,absent,absents,add,sname)
 
         include 'P1'
 
@@ -6,6 +6,7 @@
         double precision n(nspecp)
         logical absents(nspecp),absent(nphasep)
         integer iphase(nphasep),mphase(nphasep)
+        character*80 sname(nspecp)
         logical add
         add = .false.
 
@@ -16,8 +17,8 @@ C  Remove least abundant trace species
          absents(itrsmin) = .true. 
          add = .true.
          n(itrsmin) = 0.
-         print*, 'Subtracting species in tracesub',itrsmin
-         write(31,*) 'Subtracting species in tracesub',itrsmin
+         print*, 'Removing species in tracesub',itrsmin,sname(itrsmin)
+         write(31,*) 'Removing species in tracesub',itrsmin,sname(itrsmin)
 	end if
 
 C  Remove phases containing only absent species

@@ -1,4 +1,4 @@
-	subroutine Prange(Psmall,Plarge)
+	subroutine Prange(Pfeas,Psmall,Plarge)
 
 C  Must set a range of pressure over which to search
 C  Psmall can be a negative quantity.  Psmall should be greater than the pressure of the spinodal
@@ -10,7 +10,7 @@ C  Psmall can be a negative quantity.  Psmall should be greater than the pressur
 	logical isochor
 	integer ispec,ires
 	double precision apar,Ti,Pi,Psmall,Plarge,Vo,Ko,Kop,fspin,Pspin,ph,v1,v2,P1,P2,f1,f2
-	double precision vlan,x1,x2,xx,fret,htl
+	double precision vlan,x1,x2,xx,fret,htl,Pfeas
 	double precision, parameter :: tol=1.e-6
         common /state/ apar(nspecp,nparp),Ti,Pi
         common /chor/ ispec,isochor
@@ -43,15 +43,24 @@ C  Or find the volume of the spinodal at T=Ti by minimizing the pressure.  Assum
          x2 = v2
          xx = x2*(1. - tol)
 	 if (htl .eq. 0.) then
-          call nlmin_V(xx,x1,x2,fret,ires)
+          call nlmin_V(xx,x1,x2,fret,one,ires)
 	 else
-	  call nlmin_VL(xx,x1,x2,fret,ires)
+	  call nlmin_VL(xx,x1,x2,fret,one,ires)
 	 end if
 	 P2 = fret + Pi
 	 Psmall = max(Psmall,P2)
 c	 write(31,*) 'Prange prelim',ispec,v1,v2,f1,f2,P1,P2,Plarge,Psmall,xx,fret,x1,x2,ires,Pi,htl
 1	continue
 
+C  Check that the feasible pressure previously found lies within the range [Psmall,Plarge].  If it doesn't, expand the range.
+	if (Pfeas .lt. Psmall) then
+	 Psmall = Pfeas + sign(1.0d0,Pfeas)*tol
+	end if
+	if (Pfeas .gt. Plarge) then
+	 Plarge = Pfeas + sign(1.0d0,Pfeas)*tol
+	end if
+
+	Psmall = 1.e-4
 	write(31,*) 'Prange',Pi,Ti,Psmall,Plarge
 
 	return

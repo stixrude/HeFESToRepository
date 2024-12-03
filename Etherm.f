@@ -42,6 +42,7 @@ C  Debye
      &              (Ener(wd2/Ti,do,ione) + Ener(wd3/Ti,do,ione))/(3.*su)
 c	if (Ti .ge. 0.) ud = 3.*fn*Rgas*Ti*ud + 9./8.*fn*Rgas*wd1
 	ud = 3.*fn*Rgas*Ti*ud + 9./8.*fn*Rgas*wd1
+c	ud = 3.*fn*Rgas*Ti*ud
 
 C  Sin
         us = 1./su*Ener(ws1/Ti,do,ithree)
@@ -62,6 +63,9 @@ C  Optic Continuum
         Etherm = ud + us + ue + uo
 c        Etherm = 3.*fn*Rgas*Ti*(ud + us + ue + uo)
 c        Etherm = 3.*fn*Rgas*Ti*(ud + us + ue + uo) + 9./8.*fn*Rgas*wd1
+
+c        print*, 'Etherm',Etherm,fn,Rgas,Ti,ud/(3.*fn*Rgas*Ti),us/(3.*fn*Rgas*Ti),ue/(3.*fn*Rgas*Ti),uo/(3.*fn*Rgas*Ti)
+c     &   ,wd1,we1,qe1,su
 
         return
         end

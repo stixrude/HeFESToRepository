@@ -35,13 +35,13 @@ C  Find null part of the species vector, n1
 
 c	write(31,*) 's'
 c	do 16 i=1,nc
-c	 write(31,*) (s(i,j),j=1,nspec)
+c	 write(31,'(99f5.1)') (s(i,j),j=1,nspec)
 c16	continue
 c	write(31,*) 'n1'
-c	write(31,*) (n1(i),i=1,nspec)
+c	write(31,'(99f5.1)') (n1(i),i=1,nspec)
 c	write(31,*) 'q2'
 c	do 14 i=1,nspec
-c	 write(31,*) (q2(i,j),j=1,nnull)
+c	 write(31,'(99f5.1)') (q2(i,j),j=1,nnull)
 c14	continue
 
 	if (nnull .ne. nnulls) then

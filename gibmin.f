@@ -33,12 +33,13 @@ c        subroutine gibmin(nnew,fret,fretsav,qualsav,absentsav,absentssav,nnewsa
 
 	fretsav = +1.e15
 	qualsav = +1.e15
+	ftol = 1.e-5
 C  with large values of the ftol force all trace species to be removed.
 c	ftol = 10.
 	icase = 0
 
 	write(31,*) 'enter gibmin',valid(vsum,nnew)
-c        write(31,'(71f9.5)') (n(i),i=1,nspec)
+        write(31,'(99e12.5)') (n(i),i=1,nspec)
 	itersum = 0
 	if (.not. valid(vsum,nnew)) call nlfeas(n,nnew,nspec,feas,icase,ione)
 	if (icase .ne. 0) then
@@ -67,7 +68,7 @@ c         write(31,*) (nnew(i),i=1,nnull)
         call nform(nnew,n,n1,q2,nspec,nnull)
 	if (adcalc) Ti = nnew(nnull+nvet)
 	if (chcalc) Pi = nnew(nnull+nvep)
-        write(31,'(a6,5i5,99f12.5)') 'gibmn',iter,nnull,nvep,nvet,ndim,Pi,Ti,(n(i),i=1,nspec)
+        write(31,'(a6,6i5,99e12.5)') 'gibmn',ires,iter,nnull,nvep,nvet,ndim,Pi,Ti,(n(i),i=1,nspec)
 c        write(31,'(a6,5i5,99f12.5)') 'vspec',iter,nnull,nvep,nvet,ndim,Pi,Ti,(vspeca(i),i=1,nspec)
 	
 	write(31,*) 'Calling ssave from gibmin 1'
@@ -75,7 +76,7 @@ c        write(31,'(a6,5i5,99f12.5)') 'vspec',iter,nnull,nvep,nvet,ndim,Pi,Ti,(v
 	write(31,*) 'absents   ',(absents(i),i=1,nspec)
 	write(31,*) 'absentssav',(absentssav(i),i=1,nspec)
 
-        call tracesub(n,iphase,mphase,nspec,nph,absent,absents,add)
+        call tracesub(n,iphase,mphase,nspec,nph,absent,absents,add,sname)
         if (add) then
          write(31,*) 'INFORMATION: Continuing in gibmin after trace removal',fret,qual,qtest
          call sform(s,b,n1,q1,q2,nspec,nco,nc,ncs,nnull,nnulls,absents)
@@ -86,8 +87,6 @@ c        write(31,'(a6,5i5,99f12.5)') 'vspec',iter,nnull,nvep,nvet,ndim,Pi,Ti,(v
 c        call hessmin(nnew,nnull,ftolhs,iter,freths)
 c        fret = freths
 c        itersum = itersum + iter
-
-	ftol = 1.e-5
 
 	write(31,*) 'Calling ssave from gibmin 2'
         call ssave(fret,qual,nnew,fretsav,qualsav,absentsav,absentssav,nnewsav,ftol,succes,ires)
@@ -129,8 +128,8 @@ C  Check for artificial isochemical repetition of phases
 	  write(31,*) 'Phase compositions',(vec1(k),k=1,mphase(lph1)),(vec2(k),k=1,mphase(lph2)),test
 	  if (abs(test) .gt. ntol) go to 22
 C  Move phase 2 to phase 1.  set all phase 2 species to absent.
-11	  write(31,*) 'Removing phase',lph2
-	  if (absent(lph1)) write(31,*) 'Adding phase',lph1
+11	  write(31,*) 'Removing phase',lph2,phname(lph2)
+	  if (absent(lph1)) write(31,*) 'Adding phase',lph1,phname(lph1)
           k = 0
           do 24 ispec1=iphase(lph1),iphase(lph1)+mphase(lph1)-1
            ispec2 = iphase(lph2) + k
@@ -142,7 +141,7 @@ C  Move phase 2 to phase 1.  set all phase 2 species to absent.
 24        continue
 	  absent(lph2) = .true.
 	  absent(lph1) = .false.
-c          call tracesub(n,iphase,mphase,nspec,nph,absent,absents,add)
+c          call tracesub(n,iphase,mphase,nspec,nph,absent,absents,add,sname)
           call sform(s,b,n1,q1,q2,nspec,nco,nc,ncs,nnull,nnulls,absents)
           call newfrm(q2,n,n1,nnew,nspec,nnull,absents)
 	  if (adcalc) nnew(nnull+nvet) = Ti

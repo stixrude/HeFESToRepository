@@ -61,7 +61,11 @@ c	write(31,*) 'After validc',vsum,nconstr
 c	write(31,'(71f9.5)') (da(1,i),i=1,nconstr)
 c	write(31,'(71f9.5)') (x(i),i=1,nspec)
        do 2 jconstr=1,nconstr
-	 da(nspec+1,jconstr) = ssmall*10.
+c	 da(nspec+1,jconstr) = ssmall*1000.
+c	 da(nspec+1,jconstr) = ssmall*100.
+c	 da(nspec+1,jconstr) = ssmall*10.
+	 da(nspec+1,jconstr) = ssmall
+c	 da(nspec+1,jconstr) = ssmall/10.
          call nlo_add_inequality_constraint(ires, opt,
      &     myconfeas, da(1,jconstr), 1.D-8)
 2      continue
@@ -100,7 +104,7 @@ c                write(31,*) 'min val = ', minf
 5      continue
 
         write(31,*) 'Leaving nlfeasopt with n-vector:',minf,ires,icase
-        write(31,'(71f9.5)') (n(i),i=1,nspec)
+c        write(31,'(99f9.5)') (n(i),i=1,nspec)
 
 c	call newfrm(q2,n,n1,nnew,nspec,nnull,absents)
      

@@ -20,9 +20,11 @@
         double precision Kp,Ksp,Kpc,Kpth
 	double precision alpKc,alpc,agTc,Ksc,DKDTc,deltaTc,Kspc,rho,Vpc,Vsc,Gshc,Gshpc,Vdeb,Vdeb3
 	double precision dlnvpdlnv,dlnvsdlnv,dlnvdebdlnv,gamdeb
+	double precision un,pn,kn,kpn,Kbare,Kdiff,Kdiffmin
 
         common /state/ apar(nspecp,nparp),Ti,Pi
         common /names/ phname,sname
+	save Kdiffmin
         d = 1.e-6
 
         call parset(ispec,apar,fn,zu,wm,To,Fo,Vo,Ko,Kop,Kopp,
@@ -65,25 +67,6 @@ C Choose: landau for inv251010 and earlier, landauqr for later
         else
          print*, 'WARNING: Landau type not chosen.  Landau terms are not computed.'
 	end if
-C  Fluid
-        if (htl .ne. 0.) then
-	 print*, 'Warning, entering old fluid calculation in therm.f'
-         Vx = 38.9
-         Vx = Vo
-         cvp = 0.0
-         Cv = 3.*fn*Rgas*(htl + cvp*(Vi/Vx-1.))
-         Cvo = 3.*fn*Rgas*(htl+ cvp*(Vi/Vx-1.))
-         uth = Cv*Ti
-         uto = Cvo*To
-c        uth = 3.*fn*Rgas*Ti*htl
-c        uto = 3.*fn*Rgas*To*htl
-c        gamma = gammo + gammo*qo/Vo*(Vi-Vo)
-c        q = Vi/gamma*gammo*qo/Vo
-c         thet = theo*exp(-(gammo-gammo*qo)*log(Vi/Vo) - (gamma-gammo))
-         gamma = gammo + gammo*qo/Vx*(Vi-Vx)
-         q = Vi/gamma*gammo*qo/Vx
-         thet = theo*exp(-(gammo-gammo*qo)*log(Vi/Vx) - (gamma-gammo))
-        end if
         Cvn = Cv/(3.*fn*Rgas)
         Cvon = Cvo/(3.*fn*Rgas)
         call thetacal(Cvn,tcal)
@@ -126,6 +109,13 @@ C Birch-Murnaghan
      &        + 13./24.*a5*f*f*f*f)
         endif
 
+C  Ice VII-X contribution
+	un = 0.
+	pn = 0.
+	kn = 0.
+	kpn = 0.
+	if (sname(ispec)(1:4) .eq. "ice7") call icebcc(Vi,un,pn,kn,kpn)
+
 	ezp = 0.0
         pzp = 0.0
         pa = .001*3.*fn*Rgas*anh*(Ti**2 - To**2)/Vi
@@ -136,8 +126,6 @@ c     &    Wav(fn,zu,wd1,wd2,wd3,ws1,ws2,ws3,wou,wol,
 c     &              we1,we2,we3,we4,qe1,qe2,qe3,qe4)
 
         ph = .001*(gamma/Vi)*(uth - uto)
-C  Fluid
-        if (htl .ne. 0.) ph = 0.001*(gamma/Vi)*3.*htl*fn*Rgas*(Ti-To)
         a4 = 1.5*(Ko*Kopp + Kop*(Kop - 7.) + 143./9.)
         if (Kopp .eq. 0.0) a4 = 0.0
         pc = 3.*Ko*f*(1. + 2.*f)**2.5*
@@ -148,13 +136,6 @@ C  Fluid
      &                     we1,we2,we3,we4,qe1,qe2,qe3,qe4)
         Ftho = Ftherm(To,fn,zu,wd1,wd2,wd3,ws1,ws2,ws3,wou,wol,
      &                     we1,we2,we3,we4,qe1,qe2,qe3,qe4)
-C  Fluid
-        if (htl .ne. 0.) then
-c        Fth = 3.*fn*Rgas*Ti*htl*(log(thet/Ti) - 1./3.)
-c        Ftho = 3.*fn*Rgas*To*htl*(log(thet/To) - 1./3.)
-         Fth = Cv*Ti*(log(thet/Ti) - 1./3.)
-         Ftho = Cvo*To*(log(thet/To) - 1./3.)
-        end if
         Fpv = 1000.*Pi*Vi
         Kth = (gamma + 1. - q)*(ph + pzp) - .001*(gamma**2/Vi)*
      &        (Ti*Cv - To*Cvo)
@@ -214,16 +195,17 @@ c     &                     we1,we2,we3,we4,qe1,qe2,qe3,qe4,gamma)/Cvon
         DKsDTP = deltas*alpK*(1. + agT)
 c       print*, 'Ksp,Kp,Kpc,qp = ',Ksp,Kp,Kpc,qp
 
-C Landau contributions
+C Landau and Ice VII-X contributions
 	Helm = Ftot - Fpv
         Volnl = Vi
         Cp = Cp + cplan
         ent = ent + slan
-        Ftot = Ftot + glan 
+        Ftot = Ftot + glan + un
         Vi = Vi + vlan
         Helmlan = Ftot - 1000.*Pi*Vi
 	flan = Helmlan - Helm
-        K = Vi/volnl/(1./K + betlan)
+        K = Vi/volnl/(1./K + betlan) + kn
+        Kp = Kp*(K - kn)/K + kpn*kn/K
         alp = Volnl/Vi*(alp + alplan)
         Cv = Cp - 1000.*Ti*Vi*alp**2*K
 c        gamma = 1000.*Vi*alp*K/Cv
@@ -250,7 +232,6 @@ c       Gsh = (1. + 2.*f)**3.5*(b0 + b1*f) - pc*dijkl
 !       ittyp = 2 : Temperature dependence of G: eta prop. V
 !       ittyp = 3 : Temperature dependence of G: eta constant
 !       ittyp = 4 : Temperature dependence of G: eta prop. gq
-!       htl .ne. 0 : Fluid thermal eos
         if (ivtyp .eq. 1) then
          b2 = 6.*Ko*Gp - 24.*Ko - 14.*Go + 4.5*Ko*Kop
          Gsh = (1. + 2.*f)**2.5*(b0 + b1*f + b2*f*f)                    ! Full finite strain theory
@@ -314,7 +295,11 @@ c       print*, Pi,Ti,b0,b1,Gsh
         dlnvdebdlnv = 2./3.*(Vdeb/Vsc)**3*dlnvsdlnv + 1./3.*(Vdeb/Vpc)**3*dlnvpdlnv
         gamdeb = -(dlnvdebdlnv - 1./3.)
 
-c	write(31,*) 'in therm',ispec,Pi,Ti,Vi,Ks
+c	write(31,*) 'in therm',ispec,Pi,Ti,Vi,Ks,K,gamma
+	Kbare = 82. + (440. - 82.)/(103. - 12.4)*(Pi - 12.4)
+	Kdiff = K - Kbare
+	Kdiffmin = min(Kdiffmin,Kdiff)
+c	write(999,'(99f16.6)') 18.015268/Vi,Pi,K,Kdiff,Kdiffmin,pn,kn
 
         return
         end

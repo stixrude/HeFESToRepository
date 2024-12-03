@@ -11,7 +11,7 @@
         double precision qq,rho,vtarg,starg,superad,T1,tcal,tfreeze,thet,Ti,Tiphy,tlast
 	double precision uth,uto,vhugo,vol,volve,wmagg,zeta,depth,vdeb,gamdeb,bkve
 	double precision start,finish,gmainloop,gibbs,func,Pisave,Tisave,Pfrozen,Tfrozen
-	integer i,ibulk,ic,icfe,ip,iphyflag,ispec,itersum,itertot,jt,icalc,noln
+	integer i,ibulk,ic,icfe,ip,iphyflag,ispec,itersum,itertot,jt,icalc,noln,j
 	integer nbulk,nt,np,nvet,nvep,nobm,noth,maxij,lineart,nbm,mfit
         character*2 atom(natomp),comp(natomp)
         character*80 phname(nphasep),sname(nspecp)
@@ -100,6 +100,7 @@ c     &                 superad,nPREM,ns,adiabat,chcalc,adcalc,hucalc
 	  if (adcalc) then
 	   Ti = nnew(nnull+nvet)
 	   print*, 'assign Ti',jT,(nnew(i),i=1,nnull+nvet),Ti
+	   write(31,*) 'assign Ti',jT,(nnew(i),i=1,nnull+nvet),Ti
 	  end if
          end if
          do 2 ip=1,nP+1
@@ -119,7 +120,7 @@ c          Ti = max(Tiphy,tfreeze)
 c          if (Ti .ne. Tiphy) print*, 'Frozen calculation: T_pet=',Ti,' T_phy=',Tiphy
           write(31,'(//,a)') '------------------------- Pressure (GPa), Depth (km), Temperature (K) -------------------------'
           depthp = depth(Pi)
-          write(31,700)  Pi,depthp,Ti
+          write(31,'(3f16.2)')  Pi,depthp,Ti
 c          if (adcalc .and. tlast .ne. 0.) Ti = tlast
 	  icalc = icalc + 1
 	  if (frozen) then
@@ -159,8 +160,12 @@ c         if (jt .eq. 1) then
 3       continue
 	call cpu_time(finish)
 	gmainloop = finish - start
-	print*, 'time for main loop = ',gmainloop
+	print*, 'time for main loop (s) = ',gmainloop
         print '(a34,5i12)', 'Number of iterations, per point = '
+     &    ,itertot,nint(float(itertot)/float((nbulk+1)*(nP+1)*(nT+1))),nbulk+1,nP+1,nT+1
+	write(31,*) ' '
+	write(31,*) 'time for main loop (s) = ',gmainloop
+        write(31,'(a34,5i12)') 'Number of iterations, per point = '
      &    ,itertot,nint(float(itertot)/float((nbulk+1)*(nP+1)*(nT+1))),nbulk+1,nP+1,nT+1
 
 	close (7)		! file name: log
@@ -184,5 +189,4 @@ c         if (jt .eq. 1) then
 	close (661)		! contains derivative of the phase amount with respect to pressure
 
         stop 
-700     format(f6.2,f8.2,f8.2,105f9.5)
         end
