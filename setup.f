@@ -130,7 +130,7 @@ c        if (nT .eq. -3 .and. nP .ge. 0) then
 
         call dossetup
 C  Comment out hsetup for github
-	call hsetup
+c	call hsetup
         call nform(nnew,n,n1,q2,nspec,nnull)
 
 	zero = 0.
