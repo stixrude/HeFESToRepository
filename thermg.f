@@ -7,7 +7,6 @@ C  Thermodynamic properties of an ideal gas
         include 'const.inc'
         include 'theory.inc'
 	
-	logical sfix,vofix,cvfix
 	integer ispec,i,j,nbm,nobm,noth,mfit,maxij,lineart,noln
 	double precision vi,volnl,cp,cv,gamma,alp,ftot,ph,ent,deltas,tcal,zeta,gsh,uth,uto,thet,q,etas
 	double precision pzp,akt,aktel,aktig,aktxs,apar,cvel,cvig,cvxs,d2fdv2,d2tdt2,dgdt
@@ -19,10 +18,11 @@ C  Thermodynamic properties of an ideal gas
 	double precision betaig,daktdvig,Kigp,d1mach
 	double precision acp,bcp,ccp,dcp,ecp,fcp,gcp,hcp,H,Href,Kp,S,Sref,So
         common /state/ apar(nspecp,nparp),Ti,Pi
-	common /liqc/ aliqc(nparp,nparp),mfit,nobm,noth,sfix,vofix,cvfix,maxij,lineart,nbm,noln
+        common /liqc/ aliqc(nspecp,nparp,nparp),mfit,nobm,noth,maxij,lineart,nbm,noln
 	double precision, parameter :: fsmall=1.e-12
 	double precision, parameter :: P1bar = 1.e-4
 
+	fn = apar(ispec,1)
 	Vo = apar(ispec,6)
 	To = apar(ispec,4)
 	So = apar(ispec,10)
@@ -60,7 +60,7 @@ C  Thermodynamic properties of an ideal gas
         P = 0.001*fn*Rgas*Ti/Vi                       ! GPa
         akt = 0.001*fn*Rgas/Vi                        ! GPa/K
         daktdv = -0.001*fn*Rgas/(Vi*Vi)               ! GPa/K/(cm^3/mol)
-        K = Pig
+        K = Pi
         Kp = 1.0
 	alp = akt/K
 
@@ -69,6 +69,8 @@ C  Thermodynamic properties of an ideal gas
 
 	Gsh = d1mach(3)
 	dGdT = d1mach(3)
+
+c	print*, 'end thermg',Pi,Ti,Vi,K,KS,CV,CP,alp
 	
         return
         end

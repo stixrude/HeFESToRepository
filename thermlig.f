@@ -11,11 +11,13 @@
         double precision Pi,Pig,sig,Ti,vratio
 	double precision Vi,aktig,daktdvig,Kig,Kigp,Eig
 	double precision betaig,Cvig
+	double precision wm,To,Fo,Vo,Telo,eta,Tinf,zelo,xi,bpar,fmth
+	double precision aliq(nparp,nparp)
         common /state/ apar(nspecp,nparp),Ti,Pi
         fac = hplanck/sqrt(2.*pirad*boltzk)
         ee = exp(1.)
 
-	fn =   apar(ispec,1)
+        call liqset(ispec,apar,aliq,fn,wm,To,Fo,Vo,Telo,eta,Tinf,zelo,xi,bpar,fmth)
 
         Sig = 0.
         do 12 ielem=1,nelem

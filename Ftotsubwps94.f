@@ -10,15 +10,20 @@ C  Includes ideal part of Saul and Wagner (1989)
         include 'const.inc'
 	include 'water.inc'
 
+        double precision, parameter :: Sconst = 84.164 - 14.382988854989136     ! J/mol/K to recover JANAF value at 1 bar 360 K
+        double precision, parameter :: Fconst = -241.4886 - (-26.138537296328337)       !  Recovers HeFESTo (WP) value of G at 360 K in kJ/mo
+C  Note that alternate strategy for constraining Fconst was necessary because PS94 diverges near 1 bar and room temperature, producing unphysical values
         integer i,ispec
 	double precision c1,c2,c3,c4,c5,c6,c7,c8,c9,c10
 	double precision d1,d2,d3,d4,d5,d6,d7,d8,d9,d10
 	double precision e1,e2,e3,e4,e5,e6,e7,e8,e9,e10
-	double precision rho,Ftot,fac,dbl,ee,Fig,vratio,Fxs,rhor,Tr,sum
-	double precision den,deriv1,deriv2,dent
-        double precision Pi,Ti
-        double precision Vi,apar
-	double precision volve,entve,cpve,bkve,CP,ent,K
+        double precision Vi,volnl,Cp,Cv,gamma,K,Ks,alp,Ftot,ph,ent,deltas,
+     &                   tcal,zeta,Gsh,uth,uto,thet,q,etas,dGdT,pzp,Sel,Eel,Pel,Cvel,Eig,Pig,P,E,w,SNk
+	double precision rho,fac,dbl,ee,Fig,vratio,rhor,Tr,sum
+        double precision Sig,Fxs,S,CVig,Sxs,f,ft,ftt,Kig,akt,pt,dent,pressure,cs
+	double precision den,deriv1,deriv2
+        double precision apar,Pi,Ti
+	double precision volve,entve,cpve,bkve
         logical isochor
         common /volent/ volve,entve,cpve,bkve
         common /state/ apar(nspecp,nparp),Ti,Pi
@@ -27,11 +32,15 @@ C  Includes ideal part of Saul and Wagner (1989)
         dbl = fac/sqrt(Ti*wmol/(1000.*avn))
         vratio = (Vi/avn*1.e-6)/dbl**3
 	Fig = -log(vratio*ee)
+c        print*, 'PS94 Ftotw'
+c        print*, 'De Broglie thermal wavelength (A)',dbl*1e10,fac,Ti,wmol,avn,hplanck,pirad,boltzk
+c        print*, 'Volume ratio',vratio
+c        print*, 'Ideal free energy, entropy',Fig,Sig
 
 	rho = 1./Vi
 
 C  Ideal Part
-	rhor = wmol*rho/rhocritical
+	rhor = wmol*rho*1000./rhocritical
 	Tr = Tcritical/Ti
 	sum = 0.
 	do 1 i=4,8
@@ -39,6 +48,17 @@ C  Ideal Part
 1	continue
 	Fig = log(rhor) + a(1) + a(2)*Tr + a(3)*log(Tr) + sum
 	Fig = Rgas*Ti*Fig
+	print*, 'Fig Ftotsubw',Fig
+
+        sum = 0.
+        do 2 i=4,8
+         sum = sum + a(i)*g(i)/(exp(g(i)*Tr) - 1.)
+2       continue
+        Sig = a(2) + a(3)/Tr + sum
+c       print*, 'Sig reduced',Sig
+        Sig = Rgas*Tr*Sig - Fig/Ti
+        print*, 'Sig Ftotw',Sig
+
 
 C  Equation 4
 	c1  = c1a(1)*Ti**(-4)  + c1a(2)*Ti**(-2)  + c1a(3)*Ti**(-1)  + c1a(4)  + c1a(5)*Ti  + c1a(6)*Ti**2
@@ -82,15 +102,81 @@ C  Second temperature derivative of Equation 4
         dent = d2 + d3*rho + d4*rho**2 + d5*rho**3 + d6*rho**4
 
 C  Equation 1
-	Fxs = c1*rho + 1./(c2 + c3*rho + c4*rho**2 + c5*rho**3 + c6*rho**4) - 1./c2 
+	f = c1*rho + 1./(c2 + c3*rho + c4*rho**2 + c5*rho**3 + c6*rho**4) - 1./c2 
      &  - (c7/c8)*(exp(-c8*rho) - 1.) - (c9/c10)*(exp(-c10*rho) - 1.)
-	Ftot = Rgas*Ti*Fxs + Fig			! J/mol
-c	Ftot = Fig
+	Ftot = Rgas*Ti*f + Fig - Ti*Sconst + 1000.*Fconst			! J/mol
+        print*, 'Ftot PS94 from Ftotsub',Ftot,f,Fig,Sconst
+
+C  Entropy.  ent in J/mol/K
+        ft = d1*rho - ((d2 + d3*rho + d4*rho**2 + d5*rho**3 + d6*rho**4)/den**2 - d2/c2**2)
+     &  + (c7*d8/c8*rho   + c7*d8/c8**2   - d7/c8)*exp(-c8*rho)
+     &  + (c9*d10/c10*rho + c9*d10/c10**2 - d9/c10)*exp(-c10*rho)
+     &  + d7/c8 - c7*d8/c8**2 + d9/c10 - c9*d10/c10**2
+c       print*, 'ft=df/dT',ft,-f*Ti/Tr
+        S = -Rgas*Ti*ft - Rgas*f + Sig
+        ent = S + Sconst
+	print*, 'Entropy PS94 from Ftotsub',ent,ft,f,Sig,Sconst
+
+C  Heat Capacity.  CV in J/mol/K
+        ftt = e1*rho - (e2 + e3*rho + e4*rho**2 + e5*rho**3 + e6*rho**4)/den**2
+     &  + 2.*(d2 + d3*rho + d4*rho**2 + d5*rho**3 + d6*rho**4)**2/den**3
+     &  + e2/c2**2 - 2.*d2**2/c2**3
+     &  + (d7*d8/c8*rho + c7*e8/c8*rho - c7*d8**2/c8**2*rho + d7*d8/c8**2 + c7*e8/c8**2 - 2.*c7*d8**2/c8**3
+     &  - e7/c8 + d7*d8/c8**2)*exp(-c8*rho)
+     &  - (c7*d8/c8*rho   + c7*d8/c8**2   - d7/c8)*d8*rho*exp(-c8*rho)
+     &  + (d9*d10/c10*rho + c9*e10/c10*rho - c9*d10**2/c10**2*rho + d9*d10/c10**2 + c9*e10/c10**2 - 2.*c9*d10**2/c10**3
+     &  - e9/c10 + d9*d10/c10**2)*exp(-c10*rho)
+     &  - (c9*d10/c10*rho   + c9*d10/c10**2   - d9/c10)*d10*rho*exp(-c10*rho)
+     &  + e7/c8 - d7*d8/c8**2 - d7*d8/c8**2 - c7*e8/c8**2 + 2.*c7*d8**2/c8**3
+     &  + e9/c10 - d9*d10/c10**2 - d9*d10/c10**2 - c9*e10/c10**2 + 2.*c9*d10**2/c10**3
+c       print*, 'ftt=d2f/dT2',ftt
+        CV = -Rgas*Ti**2*ftt - 2.*Rgas*Ti*ft + CVig
+
+C  Bulk modulus.  K in GPa
+        K = 1. + 2.*c1*rho - 2.*rho*(deriv1/den**2) - rho**2*(deriv2/den**2) + 2.*rho**2*(deriv1**2/den**3)
+     &  + 2.*c7*rho*exp(-c8*rho) - c7*c8*rho**2*exp(-c8*rho) + 2.*c9*rho*exp(-c10*rho) - c9*c10*rho**2*exp(-c10*rho)
+        K = K*Rgas*Ti/Vi/1000.
+
+C  Pressure Equation 2. p=P/RT.  pressure in GPa
+        p = rho + c1*rho**2
+     &  - rho**2*((c3 + 2.*c4*rho + 3.*c5*rho**2 + 4.*c6*rho**3)/den**2)
+     &  + c7*rho**2*exp(-c8*rho) + c9*rho**2*exp(-c10*rho)
+        pressure = Rgas*Ti*p/1000.
+        P = pressure
+
+C  Thermal pressure coefficient alpha*K_T.  akt in MPa/K
+        pt = d1*rho**2 - rho**2*((d3 + 2.*d4*rho + 3.*d5*rho**2 + 4.*d6*rho**3)/den**2
+     &  - 2.*(c3 + 2.*c4*rho + 3.*c5*rho**2 + 4.*c6*rho**3)*dent/den**3)
+     &  + d7*rho**2*exp(-c8*rho) - c7*d8*rho**3*exp(-c8*rho)
+     &  + d9*rho**2*exp(-c10*rho) - c9*d10*rho**3*exp(-c10*rho)
+c       print*, 'p,pt',p,pt
+        akt = Rgas*Ti*pt + 1000.*pressure/Ti
+
+C  Internal energy
+        E = F + Ti*S
+
+C  Thermal expasivity
+        alp = 0.001*akt/K
+
+C  Gruneisen parameter
+        gamma = akt*Vi/CV
+
+C  Isobaric heat capacity
+        CP = CV*(1. + alp*gamma*Ti)
+
+C  Adiabatic bulk modulus
+        KS = K*(1. + alp*gamma*Ti)
+
+C  Sound speed
+        cs = sqrt(KS*Vi/wmol)
+
+	Ftot = Ftot + 1000.*Pi*Vi
 
         volve = Vi
         entve = ent
         cpve = Cp
         bkve = K
+	print*, 'End of Ftotsubw',ent,entve,Ftot
 
 	return
 	end

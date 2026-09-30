@@ -56,7 +56,7 @@
 	double precision dndpfastphase(nspecp),dndtfastphase(nspecp)
 	double precision vwork(nspecp,nspecp),checkt,checkp,ddot,wwork(nspecp),dndttest(nspecp)
 	double precision btiso,bsiso,cpiso,cviso,alpiso,gamiso,phasebuoyancyparameter,deltaent,deltavol,ClapeyronSlope
-	double precision Tro2,ao2,bo2,co2,do2,ho2gas,so2gas,go2gas,STro2
+	double precision go2gas,go2gasfunc,gh2gas,gh2gasfunc
         logical spinod(nspecp),spinph(nphasep)
 	double precision, parameter :: rhomantle = 4422.76, gmantle = 10.0, hmantle = 2891000.
 	double precision, parameter :: pmantle = rhomantle*gmantle*hmantle/1.e9
@@ -221,8 +221,8 @@ c	write(31,*) 'dfdp',(dfdp(i),i=1,nph)
 c	write(31,*) 'm',(cpa(ispec),ispec=1,nspec)
 c	write(31,*) 'checkt mu_i dn_i/dT',checkt
 c	write(31,*) 'checkp mu_i dn_i/dP',checkp
-c	write(31,*) 'vspeca',(vspeca(ispec),ispec=1,nspec)
-c	write(31,*) 'sspeca',(sspeca(ispec),ispec=1,nspec)
+	write(31,*) 'vspeca',(vspeca(ispec),ispec=1,nspec)
+	write(31,*) 'sspeca',(sspeca(ispec),ispec=1,nspec)
 C  Compute dndpfast and dndtfast which include only rapidly transforming phases
 	nfast = 0
 	do 161 ispec=1,nspecp
@@ -340,8 +340,8 @@ C  Phase Properties
           fdumm = gspec(ispec)
           call cp(ispec,n,chempot,rsum,volsum,smixi,smag)
 c         print*, 'Regular solution term',phname(iph)(1:5),sname(ispec)(1:4),rsum,ent
-	  if (.not. absents(ispec)) write(31,'(a31,i5,1x,a4,99f16.8)') 'Chemical potential and activity'
-     &     ,ispec,sname(ispec),(chempot)/1000.,exp((chempot)/(Rgas*Ti)),rsum
+	  if (.not. absents(ispec)) write(31,'(a34,i5,1x,a4,99f16.8)') 'Chemical potential, activity, rsum'
+     &     ,ispec,sname(ispec),(gspeca(ispec)+chempot)/1000.,exp((chempot)/(Rgas*Ti)),rsum
           smix = smix + n(ispec)*smixi
 c  with electronic contribution
 c         if (icfe .ne. 0) smag = s(icfe,ispec)*Rgas*(log(2.*2. + 1.) + 3.*log(3.))
@@ -397,11 +397,11 @@ c	   write(31,*) iiron,Giron(iiron),Gironmin,Gwu
 	   Gironmin = min(Gironmin,Giron(iiron))
 223	  continue
           if (iprint .eq. 1) then
-c                write(89,'(i3,a4,f7.2,f9.2,12f14.4)') ispec,sname(ispec),Pi,Ti,Htot/1000.,ent,Cap
-c     ;     ,Gtot/1000.,vol,smixi,sconf,Cv,thet
+                write(89,'(a4,f7.2,f9.2,12f14.4)') sname(ispec),Pi,Ti,Htot/1000.,ent,Cap
+     ;     ,Gtot/1000.,vol,smixi,sconf,Cv,thet
 c                write(89,'(i3,a4,f7.2,f8.2,12f11.4)') ispec,sname(ispec),Pi,Ti,Gtot/1000.-Pi*vol,ent,Cap
 c     ;     ,Gtot/1000.,vol,smixi,sconf,Cv,thet
-c     ;    write(89,'(i4,f7.2,f8.2,22f11.4)') ispec,Pi,Ti,Etot/1000.,ent,Cap
+c          write(89,'(i4,f7.2,f8.2,22f11.4)') ispec,Pi,Ti,Etot/1000.,ent,Cap
 c     ;     ,Gtot/1000.,vol,smixi,sconf,Cv,K
 	  end if
 2        continue
@@ -463,7 +463,6 @@ c	 write(31,*) 'Phase properties',iph,cpphtot,cvphtot,gamphtot,buktph,volph,alpp
          gpha(iph) = gshph
          bpha(iph) = bukph
          btpha(iph) = buktph
-         dgdtph = dgdtph*gshph**2
 C  Accumulate aggregate properties
          fnagg = fnagg + fnpha(iph)
          vabsagg = vabsagg + vabs(iph)
@@ -658,8 +657,8 @@ c       write(59,500) Pi,depth(Pi),Ti,vol,baggh,btaggh,1.e5*alpagg,cpagg,
 c     &   gruagg,n(1),hsolph/1000.
 c        write(59,500) Pi,depth(Pi),Ti,vol/81.8,baggh,btaggr,1.e5*alpagg,Cv/(fn*Rgas),cpagg*wmagg,
 c     &   gruagg,qq,ph
-c       write(599,500) Pi,depth(Pi),Ti,vol,baggh,btaggh,1.e5*alpagg,cpagg*wmagg,
-c     &   -1000.*alpagg*baggh*delagg,1000.*dgdtagg,-dlnvsdt*1.e5,-dlnvpdt*1.e5,deltas
+       write(599,500) Pi,depth(Pi),Ti,vol,baggh,btaggh,1.e5*alpagg,cpagg*wmagg,
+     &   -alpagg*baggh*delagg,dgdtagg,dgdtaggv,dgdtaggr,-dlnvsdt*1.e5,-dlnvpdt*1.e5,dlnvbdt*1.e5,deltas
 c       write(59,'(99f14.5)') Pi,depth(Pi),Ti,volagg,baggh,btaggh,1.e5*alpagg,cvagg*wmagg,
 c     &   thet,gruagg,qq,Vdeb,ph,pzp,tmelt
        write(59,'(99f16.5)') Pi,depth(Pi),Ti,volagg,bsiso,btiso,1.e5*alpiso,cpiso,
@@ -704,21 +703,17 @@ c     &   gruagg,entagg/wmagg,enthagg/wmagg/1000.,wmagg
 	do 251 ic=1,nc
 	 if (comp(ic) .eq. 'O ') then
 	  write(31,*) 'oxygen chemical potential = ',lagc(ic)
-	  ao2 = 47.255
-	  bo2 = -4.550e-4
-	  co2 = 4.402e+5
-	  do2 = -393.5
-	  Tro2 = 298.15
-	  STro2 = 205.147
-	  ho2gas = 0. + ao2*(Ti - Tro2) + 0.5*bo2*(Ti**2 - Tro2**2) - co2*(1./Ti - 1./Tro2) + 2.*do2*(sqrt(Ti) - sqrt(Tro2))
-	  so2gas = 205.15 + ao2*log(Ti/Tro2) + bo2*(Ti - Tro2) - 0.5*co2*(1./Ti**2 - 1./Tro2**2) 
-     &            - 2.*do2*(1./sqrt(Ti) - 1./sqrt(Tro2))
-	  go2gas = (ho2gas - Ti*so2gas + STro2*Tro2)/1000.
-	  write(31,*) 'oxygen gas enthalpy, entropy, gibbs (kJ/mol) = ',Ti,ho2gas,so2gas,go2gas
+	  go2gas = go2gasfunc(Ti)
 	  write(31,*) '2.*lagc(ic) - go2gas = ',2.*lagc(ic) - go2gas
-	  fug = log10(exp(1000.*(2.*lagc(ic) - go2gas)/(Rgas*Ti)))
 	  fug = (1000.*(2.*lagc(ic) - go2gas)/(Rgas*Ti))/log(10.)
 	  write(31,*) 'log_10 oxygen fugacity = ',fug
+	 end if
+	 if (comp(ic) .eq. 'H ') then
+	  write(31,*) 'hydrogen chemical potential = ',lagc(ic)
+	  gh2gas = gh2gasfunc(Ti)
+	  write(31,*) '2.*lagc(ic) - gh2gas = ',2.*lagc(ic) - gh2gas
+	  fug = (1000.*(2.*lagc(ic) - gh2gas)/(Rgas*Ti))/log(10.)
+	  write(31,*) 'log_10 hydrogen fugacity = ',fug
 	 end if
 251	continue
         write(31,'(/,a)') 'Phase Compositions - Cations'

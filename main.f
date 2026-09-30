@@ -23,7 +23,7 @@
         double precision wox(natomp),stox(natomp),wcomp(natomp),stcomp(natomp)
 	double precision aliqc
         logical adiabat,chcalc,adcalc,hucalc,tfix,pfix,frozen
-        logical isochor,sfix,vofix,cvfix
+        logical isochor
         logical spinod(nspecp),spinph(nphasep)
 	double precision, parameter :: Tsmall=1.e-5
         common /names/ phname,sname
@@ -42,7 +42,7 @@ c     &                 superad,nPREM,ns,adiabat,chcalc,adcalc,hucalc
         common /chempot/ cpa
         common /spinc/ spinod,spinph
         common /tfixc/ tfix,pfix
-        common /liqc/ aliqc(nparp,nparp),mfit,nobm,noth,sfix,vofix,cvfix,maxij,lineart,nbm,noln
+        common /liqc/ aliqc(nspecp,nparp,nparp),mfit,nobm,noth,maxij,lineart,nbm,noln
         tfix = .false.
 	pfix = .false.
         starg = 0.
@@ -50,14 +50,8 @@ c     &                 superad,nPREM,ns,adiabat,chcalc,adcalc,hucalc
         phugo = 0.
         vhugo = 0.
         ehugo = 0.
-        nbm = 2
-        nobm = 3
-        noth = 1
-	noln = 1
-        maxij = nobm + noth
-        lineart = 9
 
-        na = 0
+c        na = 0
         call setup(binit,dbulk,P1,dP,nP,T1,dT,nT,superad,tfreeze,nbulk,adiabat,chcalc,adcalc,hucalc,frozen,nvet,nvep)
 
 	if (frozen) Pfrozen = superad
@@ -113,7 +107,8 @@ c     &                 superad,nPREM,ns,adiabat,chcalc,adcalc,hucalc
 	  end if
 	  if (adcalc) starg = T1 + dT*float(jt-1)
           iphyflag = 1
-          call PTfind(Pi,Ti,adiabat,adcalc,hucalc,superad)
+c          call PTfind(Pi,Ti,adiabat,adcalc,hucalc,superad)
+          call PTfind(Pi,Ti,adiabat,superad)
           iphyflag = 0
           Tiphy = Ti
 c          Ti = max(Tiphy,tfreeze)

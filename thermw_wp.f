@@ -5,6 +5,7 @@
 
       LOGICAL qprnt1, qprnt2, qprnt3, qwrphi, qsilent
 
+c      INTEGER nttyo, noutpt, ncall
       INTEGER nttyo, noutpt
       INTEGER ispec
 
@@ -18,14 +19,18 @@
 	double precision Vi,volnl,Cp,Cv,gamma,K,Ks,alp,Ftot,ph,ent,deltas,
      &                   tcal,zeta,Gsh,uth,uto,thet,q,etas,dGdT,pzp,Sel,Eel,Pel,Cvel,Eig,Pig,P,E
 	double precision apar,Ti,Pi
-	double precision, parameter :: Sconst = 86.808 - 23.461793763133350		!  Recovers JANAF value at 372.78 K in J/mol/K
-	double precision, parameter :: Fconst = -236.839 - (-19.0987)		        !  Recovers JANAF value of DG_f at 300 K in kJ/mol/K
+	double precision, parameter :: Sconst = 84.164 - 20.82961565		!  Recovers JANAF value at 360 K in J/mol/K
+	double precision, parameter :: Fconst = -236.839 - (-19.09516677)	!  Recovers JANAF value of DG_f at 300 K in kJ/mol/K
 
         common /state/ apar(nspecp,nparp),Ti,Pi
 
       DATA tcr / 647.096d+00 /, rhocr / 322.0d+00 /,
      $ pcr / 22.064d0 /, rcnstw / 0.46151805d+00 /,
      $ xmcapw / 0.018015268d0 /
+
+c        data ncall/0/
+c        ncall = ncall + 1
+c        if (ncall .eq. 1) write(31,*) "INFORMATION: WATER FTR OF WAGNER AND PRUSS 2002"
 
 	qprnt1 = .false.
 	qprnt2 = .false.

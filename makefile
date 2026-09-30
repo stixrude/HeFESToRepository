@@ -2,14 +2,19 @@
 
 CFT     = gfortran
 LDR     = gfortran
+FFLAGSco2 = -O0
 FFLAGS  = -ffixed-line-length-132 -fimplicit-none -fno-automatic -Ofast -g -fcheck=all -Wall -fbacktrace
+LFLAGS = -Wall -Wextra
 #  Link to NLOPT library which can be downloaded and installed from https://nlopt.readthedocs.io/en/latest/
-LFLAGS = -lnlopt -lm
+# LFLAGS = -lnlopt -lm
 
 COMMAND = main
 
 .f.o :
 	$(CFT) $(FFLAGS) $*.f -c
+
+%.o : %.f90
+	$(CFT) $(FFLAGSco2) -c  $<
 
 MAIN = main.o
 
@@ -38,14 +43,19 @@ Tspin.o vfunc.o dvfunc.o Prange.o Tlfeas.o Plfeas.o hev.o stishtran.o thermlel.o
 dfac.o dsort.o dqagse.o d1mach.o dqelg.o dqk21.o dqpsrt.o hillert.o thermg.o Ftotsubg.o \
 Ftotsubw.o pressurew.o volumew.o thermw.o nlmin_vw.o myvolw.o \
 calpre.o evai95_lps.o fdescr.o ilnobl.o lejust.o calsct.o ifnobl.o apxsct.o gausse.o videal.o vmurnaghan.o \
-volumeh.o thermh.o Ftotsubh.o splie2.o splin2.o spline.o splint.o hsetup.o eoswater.o icebcc.o
+volumeh.o thermh.o Ftotsubh.o splie2.o splin2.o spline.o splint.o hsetup.o eoswater.o icebcc.o \
+go2gasfunc.o gh2gasfunc.o pressureh.o \
+Def_constants.o Def_variables.o helmholtz_dimless.o helmholtz_deriv.o deriv_disfonc.o deriv_expfonc.o Properties.o \
+Ftotsubco2.o thermco2.o volumeco2.o pressureco2.o liqset.o
 
 #  Get LAPACK and BLAS
 LIB1 = -framework Accelerate
-LIB2 = -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk
-LIB3 = -I/usr/local/include
-LIB4 = -L /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib
-LIB5 = -L /usr/local/lib
+# LIB2 = -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
+# LIB2 = -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk
+# LIB3 = -I/usr/local/include
+# LIB4 = -L /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib
+LIB4 = -I/opt/homebrew/Cellar/nlopt/2.11.0/include
+LIB5 = -L/opt/homebrew/Cellar/nlopt/2.11.0/lib -lnlopt
 
 $(COMMAND): $(MAIN) $(SUBS)
-	$(LDR) $(LFLAGS) -o $(COMMAND) -static-libgfortran -static-libgcc $(MAIN) $(SUBS) $(LIB1) $(LIB2) $(LIB3) $(LIB4) $(LIB5)
+	$(LDR) $(LFLAGS) -o $(COMMAND) $(MAIN) $(SUBS) $(LIB1) $(LIB2) $(LIB3) $(LIB4) $(LIB5)

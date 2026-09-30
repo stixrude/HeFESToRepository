@@ -51,7 +51,7 @@ C   Extra degree of freedom
 
         do 4 ispec=1,nspec
          gspeca(ispec) = gspec(ispec)
-c	 write(31,*) 'gspeca',ispec,gspeca(ispec),Pi,Ti
+	 write(31,*) 'gspeca',ispec,gspeca(ispec),Pi,Ti
 4	continue
 	write(31,*) 'spinodal instabilities:',Ti,(spinod(ispec),ispec=1,nspec)
 

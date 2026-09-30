@@ -4,7 +4,7 @@
       PARAMETER (NMAX=500)
       INTEGER i,k
       double precision p,qn,sig,un,u(NMAX)
-      if (yp1.gt..99e30) then
+      if (yp1.gt..99d30) then
         y2(1)=0.
         u(1)=0.
       else
@@ -19,7 +19,7 @@
      *1)-x(i))-(y(i)-y(i-1))/(x(i)-x(i-1)))/(x(i+1)-x(i-1))-sig*
      *u(i-1))/p
 11    continue
-      if (ypn.gt..99e30) then
+      if (ypn.gt..99d30) then
         qn=0.
         un=0.
       else

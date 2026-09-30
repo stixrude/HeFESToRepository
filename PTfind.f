@@ -4,7 +4,7 @@
 	double precision Pi,Ti,superad,alp,cap,cv,deltas,depths,dgdt,dhdpmol,dhdtmol,dvdpmol,dsdtmol,ehugo,ent,entrop
 	double precision errt,etas,freeagg,ftot,gamma,gsh,ph,phugo,pisave,pzp,qq,rho,vtarg,starg,tcal,thet,thug
 	double precision tisen,tlast,ttry1,ttry2,uth,uto,vhugo,vol,wmagg,zeta,clow,cupp,thugo,tad0
-	double precision zeroint,vdeb,gamdeb,Tspin
+	double precision zeroint,vdeb,gamdeb,Tspin,hugoniot
 	include 'P1'
 	include 'const.inc'
         logical adiabat,chcalc,adcalc,hucalc
@@ -39,6 +39,7 @@ c       mint = 3
          klo = min(max(jlo-(mint-1)/2,1),ns+1-mint)
          call neville(Ps(klo),Ts(klo),mint,Pi,Ti,errT)
          Ti = Ti + superad
+	print*, 'In PTfind',Ti,superad
         end if
 
         if (adcalc) then
@@ -103,7 +104,12 @@ c         if (.not. succes) print*, 'in PTfind root finding failed',Pi
          end if
 c	 clow = thugo
 	 clow = 100.
-	 cupp = 1.e6
+C -> Approximate melting curve of hydrogen
+c	 clow = max(100.d0,10.d0**(1.91457 + 0.70305*log10(Pi)))
+c	 if (log10(Pi) .gt. 1.4984) clow = 10.d0**(2.68806 + 0.18616*log10(Pi))
+C <-
+	 if (Ttry1 .lt. clow) Ttry1 = clow + diffT
+	 cupp = 1.e8
          Ttry2 = Ttry1 + diffT
          print*, 'in PTfind, enter cage',Ttry1,Ttry2,clow,cupp
          call caget(hugoniot,Ttry1,Ttry2,clow,cupp,ires)

@@ -6,10 +6,11 @@
 	double precision gam,gamma,ge,Go,Got,Gop,Gsh,htl,ph,Pi,pzp,q2a2,qo,qq,tcal,thet
 	double precision Ti,To,uth,uto,Vo,vol,volnl,volve
 	double precision qe1,qe2,qe3,qe4,we1,we2,we3,we4,wd1,wd2,wd3,ws1,ws2,ws3,wou,wol
-	double precision wm,x1,zeta,zu,gspec,volume,volumel,volumew,bkve,volumeh
+	double precision wm,x1,zeta,zu,gspec,volume,volumel,volumew,bkve,volumeh,volumeco2
 	integer ispec,i,ibv,ied,iphyflag,izp,ncall
         double precision Ko,Kop,Kopp,K,Ks,vdeb,gamdeb
 	double precision E,Eel,Eig,P,Pel,Pig,Sel,Cvel,videal
+	double precision akt,beta,daktdv,Kp
 	double precision x1a(nspecp)
 	logical spinod(nspecp),spinph(nphasep)
 	common /volent/ volve,entve,cpve,bkve
@@ -50,8 +51,10 @@ c	 Ti = Tsmall
         if (x1a(ispec) .gt. xsmall) x1 = x1a(ispec)
 	if (htl .eq. 0.) vol = volume(ispec,x1)
 	if (htl .eq. 1. .or. htl .eq. 4) vol = volumel(ispec,x1)
+	if (htl .eq. 2.) vol = videal(fn,Pi,Ti)
 	if (htl .eq. 3.) vol = volumew(ispec,x1)
 	if (htl .eq. 5.) vol = volumeh(ispec,x1)
+	if (htl .eq. 6.) vol = volumeco2(ispec,x1)
 c	print '(a11,i5,99f12.5)', 'x1a vol    ',ispec,vol
 c	print '(a11,i5,99f12.5)', 'x1a after v',ispec,(x1a(jj),jj=1,47)
 C  Volume failed for physical reasons: species is spinodally unstable.
@@ -83,12 +86,16 @@ C  Now that we have found the volume, we can compute the physical properties and
      &               zeta,Gsh,uth,uto,thet,qq,etas,dGdT,pzp,Vdeb,gamdeb)
 	 end if
 	 if (htl .eq. 1. .or. htl .eq. 4) then
-          call therml(ispec,vol,volnl,Cp,Cv,gamma,K,Ks,alp,Ftot,ph,ent,deltas,tcal,
-     &               zeta,Gsh,uth,uto,thet,qq,etas,dGdT,pzp,Sel,Eel,Pel,Cvel,Eig,Pig,P,E)
+c          call therml(ispec,vol,volnl,Cp,Cv,gamma,K,Ks,alp,Ftot,ph,ent,deltas,tcal,
+c     &               zeta,Gsh,uth,uto,thet,qq,etas,dGdT,pzp,Sel,Eel,Pel,Cvel,Eig,Pig,P,E)
+	  call therml(ispec,vol,volnl,Cp,Cv,gamma,K,Ks,alp,Ftot,ent,akt,daktdv,
+     &                   beta,Kp,Sel,Eel,Pel,Cvel,Eig,Pig,P,E)
+	  Gsh = 0.
 	 end if
 	 if (htl .eq. 2.) then
           call thermg(ispec,vol,volnl,Cp,Cv,gamma,K,Ks,alp,Ftot,ph,ent,deltas,tcal,
      &               zeta,Gsh,uth,uto,thet,qq,etas,dGdT,pzp,Sel,Eel,Pel,Cvel,Eig,Pig,P,E)
+c	  print*, 'in gspec after thermg',Pi,Ti,vol,K,alp
 	 end if
 	 if (htl .eq. 3.) then
           call thermw(ispec,vol,volnl,Cp,Cv,gamma,K,Ks,alp,Ftot,ph,ent,deltas,
@@ -98,12 +105,17 @@ C  Now that we have found the volume, we can compute the physical properties and
           call thermh(ispec,vol,volnl,Cp,Cv,gamma,K,Ks,alp,Ftot,ph,ent,deltas,
      &                   tcal,zeta,Gsh,uth,uto,thet,qq,etas,dGdT,pzp,Sel,Eel,Pel,Cvel,Eig,Pig,P,E)
 	 end if
+	 if (htl .eq. 6.) then
+          call thermco2(ispec,vol,volnl,Cp,Cv,gamma,K,Ks,alp,Ftot,ph,ent,deltas,
+     &                   tcal,zeta,Gsh,uth,uto,thet,qq,etas,dGdT,pzp,Sel,Eel,Pel,Cvel,Eig,Pig,P,E)
+	 end if
         end if
-	if (htl .eq. 0) call Ftotsub(ispec,volnl,Ftot)
-	if (htl .eq. 1 .or. htl .eq. 4) call Ftotsubl(ispec,volnl,Ftot)
-	if (htl .eq. 2)  call Ftotsubg(ispec,volnl,Ftot)
-	if (htl .eq. 3)  call Ftotsubw(ispec,volnl,Ftot)
-	if (htl .eq. 5)  call Ftotsubh(ispec,volnl,Ftot)
+	if (htl .eq. 0.) call Ftotsub(ispec,volnl,Ftot)
+	if (htl .eq. 1. .or. htl .eq. 4.) call Ftotsubl(ispec,volnl,Ftot)
+	if (htl .eq. 2.)  call Ftotsubg(ispec,volnl,Ftot)
+	if (htl .eq. 3.)  call Ftotsubw(ispec,volnl,Ftot)
+	if (htl .eq. 5.)  call Ftotsubh(ispec,volnl,Ftot)
+	if (htl .eq. 6.)  call Ftotsubco2(ispec,volnl,Ftot)
 
 c	volve = vol
         gspec = Ftot

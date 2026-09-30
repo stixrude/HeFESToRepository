@@ -4,7 +4,6 @@
         include 'const.inc'
         include 'theory.inc'
 	
-	logical sfix,vofix,cvfix
 	integer ispec,i,j,nbm,nobm,noth,mfit,maxij,lineart,jelem,noln
 	double precision vi,volnl,cp,cv,gamma,alp,ftot,ph,ent,deltas,tcal,zeta,gsh,uth,uto,thet,q,etas
 	double precision pzp,akt,aktel,aktig,aktxs,apar,cvel,cvig,cvxs,d2fdv2,d2tdt2,dgdt
@@ -15,24 +14,14 @@
 	double precision aliq(nparp,nparp),aliqc,cliq0,cliq1,cliq2,tee,dteedt,acof,bcof
 	double precision betaig,daktdvig,Kigp
 	double precision volve,entve,cpve,bkve
-        double precision, parameter :: Tglass = 100.0
+        double precision bpar,eta,Fo,telo,tinf,wm,xi,zelo
+        double precision, parameter :: Tglass = 1000.0
         common /volent/ volve,entve,cpve,bkve
         common /state/ apar(nspecp,nparp),Ti,Pi
-	common /liqc/ aliqc(nparp,nparp),mfit,nobm,noth,sfix,vofix,cvfix,maxij,lineart,nbm,noln
+        common /liqc/ aliqc(nspecp,nparp,nparp),mfit,nobm,noth,maxij,lineart,nbm,noln
 	double precision, parameter :: fsmall=1.e-12
 
-C  For fitting, get parameters from aliqc
-	do 21 i=1,nparp
-	 do 21 j=1,nparp
-	  aliq(i,j) = aliqc(i,j)
-21	continue
-C  For forward code, get parameters from aliqset
-        call aliqset(ispec,aliq)
-	
-	Vo = apar(ispec,6)
-	To = apar(ispec,4)
-	fmth = apar(ispec,33)
-	fn = apar(ispec,1)
+        call liqset(ispec,apar,aliq,fn,wm,To,Fo,Vo,Telo,eta,Tinf,zelo,xi,bpar,fmth)
 
 	f = 0.5*((Vo/Vi)**(2./3.) - 1.)
 	if (f .eq. 0.) f = fsmall
@@ -53,15 +42,17 @@ C  For forward code, get parameters from aliqset
 	 do 1 j=0,noth
 	  if (i+j .ge. maxij) go to 1
 	  Fxs = Fxs + aliq(i+1,j+1)/(dfac(i)*dfac(j))*f**(i)*theta**(j)
+c	  print*, 'in Ftotsubl',i,j,aliq(i+1,j+1),Fxs
 1	continue
         do 11 i=0,noln
          Fxs = Fxs + tee*aliq(i+1,lineart)*f**i/dfac(i)
+c	 print*, 'in Ftotsubl',i,lineart,aliq(i+1,lineart),Fxs
 11      continue
         Ftot = 1000.*Fxs + 1000.*Fel + Fig + 1000.*Pi*Vi
 
 c        print*, 'in Ftotsubl',ispec,Pi,Ti,Vi,Fxs,Fel,Fig/1000.,Ftot/1000.
 
-        if (Ti .lt. Tglass) Ftot = 999999.e6
+        if (Ti .lt. Tglass) Ftot = 99999.e6
 
 	Sxs = 0.
 	do 2 i=0,nobm
@@ -146,6 +137,6 @@ c	  print*, i,j,aliq(i+1,j+1),f,theta,dtdt
         entve = ent
         cpve = Cp
         bkve = K
-	
+
         return
         end

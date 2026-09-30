@@ -4,7 +4,6 @@
         include 'const.inc'
         include 'theory.inc'
 	
-	logical sfix,vofix,cvfix
 	integer ispec,i,j,nbm,nobm,noth,mfit,maxij,lineart,jelem,noln
 	double precision vi,volnl,cp,cv,gamma,alp,ftot,ph,ent,deltas,tcal,zeta,gsh,uth,uto,thet,q,etas
 	double precision pzp,akt,aktel,aktig,aktxs,apar,cvel,cvig,cvxs,d2fdv2,d2tdt2,dgdt
@@ -19,7 +18,7 @@
         double precision, parameter :: Tglass = 1500.0
         common /volent/ volve,entve,cpve,bkve
         common /state/ apar(nspecp,nparp),Ti,Pi
-	common /liqc/ aliqc(nparp,nparp),mfit,nobm,noth,sfix,vofix,cvfix,maxij,lineart,nbm,noln
+        common /liqc/ aliqc(nspecp,nparp,nparp),mfit,nobm,noth,maxij,lineart,nbm,noln
 	double precision, parameter :: fsmall=1.e-12
         double precision, parameter :: P1bar = 1.e-4
 

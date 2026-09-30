@@ -3,7 +3,7 @@
 
         include 'P1'
 
-	integer ispec
+	integer ispec,ncall
       REAL(8) tcr, rhocr, pcr, rcnstw,xmcapw
         double precision Vi,volnl,Cp,Cv,gamma,K,Ks,alp,Ftot,ph,ent,deltas,
      &                   tcal,zeta,Gsh,uth,uto,thet,q,etas,dGdT,pzp,Sel,Eel,Pel,Cvel,Eig,Pig,P,E,w,SNk
@@ -12,12 +12,18 @@
 
         common /state/ apar(nspecp,nparp),Ti,Pi
 
-        double precision, parameter :: Sconst = 86.808 + 46.315042475974771             !  Recovers JANAF value at 372.78 K in J/mol/K
-        double precision, parameter :: Fconst = -236.839 - (-19.399324932220778)        !  Recovers JANAF value of DG_f at 300 K in J/mo
+        double precision, parameter :: Sconst = 84.164 + 49.062812		!  Recovers JANAF value at 360 K in J/mol/K
+        double precision, parameter :: Fconst = -236.839 - (-19.42864476)	!  Recovers JANAF value of DG_f at 300 K in kJ/mol/K
 
       DATA tcr / 647.096d+00 /, rhocr / 322.0d+00 /,
      $ pcr / 22.064d0 /, rcnstw / 0.46151805d+00 /,
      $ xmcapw / 0.018015268d0 /
+
+        data ncall/0/
+        ncall = ncall + 1
+        if (ncall .eq. 1) write(31,*) "INFORMATION: WATER FTR OF MAZEVET ET AL 2019"
+        if (ncall .eq. 1) write(6,*) "INFORMATION: WATER FTR OF MAZEVET ET AL 2019"
+	call flush(31)
 
         RHO = 1000.*xmcapw/Vi           ! g/cm^3
         T = Ti

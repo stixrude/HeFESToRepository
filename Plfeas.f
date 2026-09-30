@@ -6,8 +6,8 @@ C  vtarg is the target density (g/cm^3)
 	include 'chem.inc'
 	logical chcalc,adcalc,hucalc
 	integer iter,int,nvet,nvep,ispec
-	double precision tlast,vtarg,starg,phugo,vhugo,ehugo,dvdpmol,dsdtmol,dhdpmol,dhdtmol,wmagg
-	double precision Pfeas,val,nnew(nspecp),func,Po,x(nspecp),vfunc,pressure,pressurel,apar,Pi,Ti
+	double precision tlast,vtarg,starg,phugo,vhugo,ehugo,dvdpmol,dsdtmol,dhdpmol,dhdtmol,wmagg,htl
+	double precision Pfeas,val,nnew(nspecp),func,Po,x(nspecp),vfunc,pressure,pressurel,pressureh,pressurew,apar,Pi,Ti
 	double precision, parameter :: Psmall=1.e-5
 	integer, parameter :: itermax=5
         common /state/ apar(nspecp,nparp),Ti,Pi
@@ -20,13 +20,13 @@ C  If there is only one species, then find the feasible pressure by calculating 
 	val = func(nnew)
 	if (nspec .eq. 1) then
 	 ispec = 1
+	 htl = apar(ispec,31)
 	 Pi = 0.
 c	 write(31,*) 'Calling pressure(l) from Plfeas',Pi,Ti,wmagg,vtarg,wmagg
-	 if (apar(ispec,31) .eq. 0) then
-	  Po = pressure(apar(ispec,3)/vtarg)
-	 else 
-	  Po = pressurel(apar(ispec,3)/vtarg)
-	 end if
+	 if (htl .eq. 0) Po = pressure(apar(ispec,3)/vtarg)
+	 if (htl .eq. 1 .or. htl .eq. 4)  Po = pressurel(apar(ispec,3)/vtarg)
+	 if (htl .eq. 3) Po = pressurew(apar(ispec,3)/vtarg)
+	 if (htl .eq. 5) Po = pressureh(apar(ispec,3)/vtarg)
 	 nnew(nnull+nvep) = Po
 	 val = func(nnew)
 	 Pfeas = Po

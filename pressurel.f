@@ -10,24 +10,14 @@
 	double precision Sel,Eel,Fel
 	double precision aktel,betael,Cvel,daktdvel,Kel,Kelp
 	double precision aktig,betaig,Cvig,daktdvig,Eig,Fig,Kig,Kigp,Sig
-	logical isochor,sfix,vofix,cvfix
+	logical isochor
         double precision aliq(nparp,nparp),aliqc
+        double precision bpar,eta,Fo,telo,tinf,wm,xi,zelo
         common /state/ apar(nspecp,nparp),Ti,Pi
         common /chor/ ispec,isochor
-        common /liqc/ aliqc(nparp,nparp),mfit,nobm,noth,sfix,vofix,cvfix,maxij,lineart,nbm,noln
+        common /liqc/ aliqc(nspecp,nparp,nparp),mfit,nobm,noth,maxij,lineart,nbm,noln
 
-C  For fitting, get parameters from aliqc
-        do 21 i=1,nparp
-         do 21 j=1,nparp
-          aliq(i,j) = aliqc(i,j)
-21      continue
-C  For forward code, get parameters from aliqset
-        call aliqset(ispec,aliq)
-
-	Vo = apar(ispec,6)
-	To = apar(ispec,4)
-	fmth = apar(ispec,33)
-	fn = apar(ispec,1)
+        call liqset(ispec,apar,aliq,fn,wm,To,Fo,Vo,Telo,eta,Tinf,zelo,xi,bpar,fmth)
 
 	vo23 = Vo**(2./3.)
 	feul = 0.5*((Vo/Vi)**(2./3.) - 1.)

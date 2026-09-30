@@ -12,8 +12,8 @@
         common /state/ apar(nspecp,nparp),Ti,Pi
 	common /volent/ volve,entve,cpve,bkve
 
-        double precision, parameter :: Sconst = 86.808 + 46.315042475974771             !  Recovers JANAF value at 372.78 K in J/mol/K
-        double precision, parameter :: Fconst = -236.839 - (-19.399324932220778)        !  Recovers JANAF value of DG_f at 300 K in J/mo
+        double precision, parameter :: Sconst = 84.164 + 49.062812              !  Recovers JANAF value at 360 K in J/mol/K
+        double precision, parameter :: Fconst = -236.839 - (-19.42864476)       !  Recovers JANAF value of DG_f at 300 K in kJ/mol/K
 
       DATA tcr / 647.096d+00 /, rhocr / 322.0d+00 /,
      $ pcr / 22.064d0 /, rcnstw / 0.46151805d+00 /,

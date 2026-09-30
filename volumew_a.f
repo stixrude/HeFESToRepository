@@ -3,7 +3,7 @@
 
 	integer ispec,ires,jspec,nb,nseg
 	double precision x1,apar,fret,Pi,pressurew,Ti,vlan,vlow,vo,vsplow,vspupp,vupp,x2,xx,vsp,plow,pupp
-	double precision zeroin,p1,p2
+        double precision zeroin,p1,p2,fn,videal,videalgas,vcritical,tcritical
         logical isochor
         double precision xb1(10),xb2(10)
         common /state/ apar(nspecp,nparp),Ti,Pi
@@ -12,11 +12,15 @@
         double precision, parameter :: tol=1.e-12, vsmall=1.0, fracv = 1.e-1
 	jspec = ispec
 
-C  Volume at the critical point
-	vupp = 55.948757763975155
-	vupp = 60.0
-C  Volume at 5270 K, 275 GPa
-	vlow = 4.0
+        fn = apar(jspec,1)
+        videalgas = videal(fn,Pi,Ti)
+	vcritical = 55.948757763975155
+	tcritical = 647.
+
+C  Volume of ideal gas or the critical volume
+	vupp = max(videalgas,vcritical)
+C  Volume at 2000 K, 890 GPa
+        vlow = 3.0
 
 c        Vo = apar(ispec,6)
 C  Fix volume to Vo and return if isochoric conditions have been chosen
@@ -46,7 +50,7 @@ C  Zbrac failed.  The following logic assumes that if a solution Vsol exists,
 C  it satisfies Vo < Vsol < Vsp where Vsp is the spinodal limit.
 C  Find spinodal volume at this temperature by finding the volume at which the pressure is a minimum.
 C  Assume that T>T_0 and that Vsp(T)<Vsp(T_0)
-         print *, 'volume Failed to find V cage',ispec,Ti,Pi,x1,x2,p1,p2,vlow,vupp,plow,pupp
+         print *, 'volumew Failed to find V cage',ispec,Ti,Pi,x1,x2,p1,p2,vlow,vupp,plow,pupp
          x1 = Vo - vlan
          x2 = vspupp
 c         x1 = Vo - vlan

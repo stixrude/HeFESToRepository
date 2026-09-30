@@ -9,17 +9,12 @@
 	double precision daktdvel,dtdv,dxdv,dzdv,fel
         double precision Kel,Kelp,pel,Pi,sel,telo,Ti,x
 	double precision Eel,dlnzdv,d2lnzdv2,dlntdv,d2lntdv2,d3lnzdv3,d3lntdv3,Tel,DTel,Tinf
-	double precision zelo,Vo,xi,y,zel,bpar,Vi
+	double precision zelo,Vo,xi,y,zel,bpar,Vi,fmth,fn,Fo,To,wm
 	double precision betael,Cvel,zelr
+	double precision aliq(nparp,nparp)
         common /state/ apar(nspecp,nparp),Ti,Pi
 
-        Vo =   apar(ispec,6)
-	Telo = apar(ispec,13)
-	eta = apar(ispec,14)
-	Tinf = apar(ispec,15)
-	zelo = apar(ispec,28)
-	xi = apar(ispec,29)
-	bpar = apar(ispec,30)
+	call liqset(ispec,apar,aliq,fn,wm,To,Fo,Vo,Telo,eta,Tinf,zelo,xi,bpar,fmth)
 	zelo = zelo/1.e6
 	Tel = Tinf + Telo*(Vi/Vo)**eta
 

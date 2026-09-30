@@ -4,7 +4,7 @@
 
       LOGICAL qprnt1, qprnt2, qprnt3, qwrphi, qsilent, isochor
 
-      INTEGER nttyo, noutpt
+      INTEGER nttyo, noutpt, ncall
       INTEGER ispec
 
       REAL(8) tcr, rhocr, pcr, rcnstw
@@ -26,6 +26,10 @@
       DATA tcr / 647.096d+00 /, rhocr / 322.0d+00 /,
      $ pcr / 22.064d0 /, rcnstw / 0.46151805d+00 /,
      $ xmcapw / 0.018015268d0 /
+
+        data ncall/0/
+        ncall = ncall + 1
+        if (ncall .eq. 1) write(31,*) "INFORMATION: WATER FTR OF WAGNER AND PRUSS 2002"
 
 	qprnt1 = .false.
 	qprnt2 = .false.

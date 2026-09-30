@@ -1,5 +1,5 @@
 	subroutine icebcc(Vi,un,pn,kn,kpn)
-C  Following frenchredmer_15 add zero-point nuclear contribution to VII-VII'-X transitions 
+C  Following frenchredmer_15 add zero-point nuclear contribution to VII-VII*-X transitions 
 C  that captures anomalies in pressure and bulk modulus.
 C  Use a simpler functional form that reproduces their result closely:
 C  un(rho) = u7(rho) + f(rho)*(u10(rho) - u7(rho))
@@ -36,8 +36,11 @@ C  Thermodynamic quantities
 	pn = rho**2*(fp*u + f*up)
 	kn = 2.*pn + rho**3*(fpp*u + 2.*fp*up + f*upp)
 	kpn = 5. - 6.*pn/kn + rho**4/kn*(fppp*u + 3.*fpp*up + 3.*fp*upp + f*uppp)
+	if (kn .eq. 0) kpn = 0
 
         un = un*1000.*1000.*xmcapw                      ! J/mol
+
+	if (kn .ne. 0.) write(999,*) rho,un,pn,kn,kpn
 
 	return
 	end

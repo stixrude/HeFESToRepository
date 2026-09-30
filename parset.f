@@ -137,6 +137,7 @@ C  Only a lower bound
 	end if
 	vupp = Vo*(2.*min(f1,f2) + 1.)**(-3./2.)
 	vlow = Vo*(2.*max(f1,f2) + 1.)**(-3./2.)
+	if (min(f1,f2) .lt. -0.5) vupp = 2.*Vo
 10	continue
 C  Require vibrational frequency to increase with increasing f (decreasing V)
 	if (fextremum .gt. 0.) vlow = max(vlow,vextremum)
@@ -187,6 +188,8 @@ C  One positive root and one negative root: upper and lower bounds (Kop<4)
 	apar(ispec,54) = min(vspupp,Vo*10.) - vsmall
 C  Relax upper bound on volume for liquids
 c	if (htl .eq. 1) apar(ispec,54) = Vo*1000.
+	print*, 'spinodal limits: f1,f2,vsplow,vspupp,apar(ispec,51),apar(ispec,52),fextremum,vextremum'
+     &   ,f1,f2,vlow,vupp,apar(ispec,51),apar(ispec,52),fextremum,vextremum
 	write(31,'(a34,i5,99f12.5)') 'V bounds: vibrational and spinodal'
      &   ,ispec,apar(ispec,51),apar(ispec,52),apar(ispec,53),apar(ispec,54),f1,f2
 c     &   ,a,b,det,vlow,vupp,asp,bsp,detsp,vsplow,vspupp

@@ -14,11 +14,11 @@ c	 ourlog = log(small) - 1./small*(small - x)
 	 ourlog = log(x)
 	end if
 
-	if (y .le. -small) then
+c	if (y .le. -small) then
 c	 write(31,*) 'WARNING: Negative Argument of logarithm',y,ourlog
-	else
+c	else
 c	 if (y .le. small) write(31,*) 'WARNING: Small Argument of logarithm',y,ourlog
-	end if
+c	end if
 
 	return
 	end

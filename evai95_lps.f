@@ -22,7 +22,7 @@ c     Calling sequence variables.
 
       LOGICAL qprnt1, qprnt2, qprnt3, qwrphi, qsilent
 
-      INTEGER nttyo, noutpt
+      INTEGER nttyo, noutpt, ncall
 
       REAL(8) tcr, rhocr, pcr, rcnstw
       REAL(8) delta, tau, rho, tempk, press
@@ -170,6 +170,7 @@ c     Local variables.
 
       INTEGER i,ix
 
+C -> LPS Added terms
 	real(8) nx(2),dx(2),tx(2),deltax,rhox
 c	data dx / 3.0d0 /
 c	data tx / 1.5d0 /
@@ -280,10 +281,17 @@ c	data nx / -6.22489786   ,   2.46272516  /
 c Density Differences / Error and RMS residual (g/cc)	-0.266995 2.49055 -3.68727 	Chi Squared 19.8701
 
 	data rhox / 1237.39d0 /
+        data ncall/0/
 	deltax = delta*rhocr/rhox
 c	open(151,file='nxvalues.txt',status='old')
 c	read(151,*) nx(1),nx(2)
 c	close (151)
+C <- LPS Added terms
+        ncall = ncall + 1
+        if (ncall .eq. 1) then
+	 write(31,*) "INFORMATION: WATER FTR OF WAGNER AND PRUSS 2002 AS MODIFIED BY LPS 2025."
+         write(31,'(6f12.5)') dx(1),dx(2),tx(1),tx(2),nx(1),nx(2)
+	end if
 
 c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

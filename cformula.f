@@ -8,7 +8,7 @@ C  Assigns Stoichiometric and Site Coefficients: s,r
 	include 'const.inc'
 	include 'elem.inc'
 
-	integer ispec,nc,nsite,i,i1,i2,ic,ielem,iloc,ip1,isite,jatom,jelem,ksite,mult,n,ncall,ncaug,nchar,j,k
+	integer ispec,nc,nsite,i,i1,i2,ic,ielem,iloc,ip1,ip2,isite,jatom,jelem,ksite,mult,n,ncall,ncaug,nchar,j,k
 	integer idchar,nmchar
 	double precision fn,stoich,wm
         logical lox,open,square
@@ -93,11 +93,16 @@ C  Atom?
 C  Find Stoichiometric Coefficient
 	i1 = iloc
 	ip1 = iloc + 1
-        if (idchar(form(ip1:ip1)) .eq. 1) then
-	 i2 = iloc + 1
-	else
-	 i2 = iloc
-	end if
+	ip2 = iloc + 2
+c        if (idchar(form(ip1:ip1)) .eq. 1) then
+c	 i2 = iloc + 1
+c	else
+c	 i2 = iloc
+c	end if
+C  Following logic permits stoichoimetric coefficients of up to three digits
+        if (idchar(form(ip1:ip1)) .ne. 1) i2 = iloc
+        if (idchar(form(ip1:ip1)) .eq. 1) i2 = iloc + 1
+        if (idchar(form(ip2:ip2)) .eq. 1) i2 = iloc + 2
 	stoich = nmchar(form,i1,i2)
 	print*, 'stoich = ',stoich
 	fn = fn + stoich

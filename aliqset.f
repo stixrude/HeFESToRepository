@@ -1,10 +1,12 @@
         subroutine aliqset(ispec,aliq)
+
+C  Compute a_ij coefficients (aliq) of dekokerstixrude_09 Eq. 16 from apar values and Eqs. A5-A19
+C  Valid for nobm<=3, noth<=1, noln<=1
 	
 	include 'P1'
         include 'theory.inc'
 	include 'const.inc'
 
-	logical sfix,vofix,cvfix
 	integer ispec,nbm,i,ielem,j,lineart,maxij,nobm,noth,mfit,noln
 	double precision To,fmth,fn,eta,aktel,akto,aktoxs,apar,d2tdv2,d2xdv2,d2zdv2,d3tdv3,d3xdv3,d3zdv3
 	double precision daktdvel,daktdvoxs,dbl,dtdv,dxdv,dzdv,daktdvo,ee,ento,fac,fel,fig,fo,fxso
@@ -13,7 +15,7 @@
 	double precision aliq(nparp,nparp),aliqc
 	double precision zelo,Vo,xi,y,zel,bpar,Vi,aktig,daktdvig,Kig,Kigp,Eig
 	double precision betael,betaig,betao,betaxso,Cvel,Cvig,Cvxso,cvo,zelr,Tisave,Pisave
-        common /liqc/ aliqc(nparp,nparp),mfit,nobm,noth,sfix,vofix,cvfix,maxij,lineart,nbm,noln
+	common /liqc/ aliqc(nspecp,nparp,nparp),mfit,nobm,noth,maxij,lineart,nbm,noln
         common /state/ apar(nspecp,nparp),Ti,Pi
         fac = hplanck/sqrt(2.*pirad*boltzk)
         ee = exp(1.)
@@ -71,13 +73,13 @@ c	print*, 'aliqset',Sig,Fig,Sxso,Fxso,Fel,fmth,cvo,Cvig,Cvel,Cvxso,zel,To,Tel
 	aliq(2,lineart) = 3.*Vo*To*aktoxs - 3.*To*Vo*betaxso/(fmth - 1.)/1000.
 	if (pxso .eq. 0.) aliq(3,2) = -9./fmth*daktdvoxs*Vo*To
 
-c	do 2 j=0,2
-c	 do 2 i=0,3
-c	  if (i+j .gt. 3) go to 2
-c	  print*, i,j,aliq(i+1,j+1)
-c2	continue
-c	print*, "0",lineart,aliq(1,lineart)
-c	print*, "1",lineart,aliq(2,lineart)
+	do 2 j=0,1
+	 do 2 i=0,3
+	  if (i+j .gt. 3) go to 2
+	  print*, i,j,aliq(i+1,j+1)
+2	continue
+	print*, "0",lineart,aliq(1,lineart)
+	print*, "1",lineart,aliq(2,lineart)
 
 	return
 	end

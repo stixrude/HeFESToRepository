@@ -8,8 +8,8 @@
 	double precision Vi,a3,a4,a5,anh,apar,be,beta,d,detasdv,eta,etas,f,fn,fo,g,gam,gamma,gammo,ge,go,gop
 	double precision got,htl,pa,pc,pel,ph,pi,pzp,q,q2a2,qe1,qe2,qe3,qe4,qo,qp,theo,thet,ti,to,uth,uto,vo
 	double precision vx,wd1,wd1o,wd2,wd2o,wd3,wd3o,we1,we1o,we2,we2o,we3,we3o,we4,we4o,wm,wol,wolo,wou
-	double precision wouo,ws1,ws1o,ws2,ws2o,ws3,ws3o,xv,zu,pressure,Etherm
-	double precision un,pn,kn,kpn
+	double precision wouo,ws1,ws1o,ws2,ws2o,ws3,ws3o,xv,zu,pressure,Etherm,fmth
+	double precision un,pn,kn,kpn,Toel
         logical aniso
 	logical isochor
         double precision Ko,Kop,Kopp
@@ -26,6 +26,7 @@
      &                    htl,ibv,ied,izp,
      &                    Go,Gop,Got)
 
+        fmth = apar(ispec,33)
         theo = wd1o
         gammo = gam
         call gamset(wd1o,wd2o,wd3o,ws1o,ws2o,ws3o,
@@ -51,6 +52,12 @@ c     &    Wav(fn,zu,wd1,wd2,wd3,ws1,ws2,ws3,wou,wol,
 c     &              we1,we2,we3,we4,qe1,qe2,qe3,qe4)
         beta = be*(Vi/Vo)**(ge)
         pel = .001*.5*ge*beta*(Ti*Ti - To*To)/Vi
+C  -> 6/2/25.  Generalize exponent of electronic term so that it can differ from two. Using apar(ispec,33) as the value of the exponent (formerly used as Debye/Einstein switch).
+c	Toel = 1301.
+	Toel = To
+        fmth = apar(ispec,33)
+        pel = 0.001*0.5*ge*beta*(fmth - 1.)*(Ti**fmth - Toel**fmth)/Vi
+C <-
 
         if (ibv .eq. 2) then
 C Lagrangian correct to 3rd order only
@@ -76,7 +83,7 @@ C  Ice VII-X contribution
 	pn = 0.
 	kn = 0.
 	kpn = 0.
-	if (sname(ispec)(1:4) .eq. "ice7") call icebcc(Vi,un,pn,kn,kpn)
+	if (sname(ispec)(1:4) .eq. "iceb" .or. sname(ispec)(1:4) .eq. "ices") call icebcc(Vi,un,pn,kn,kpn)
 
         pressure = pc + ph + pa + pel + pzp + pn - Pi
 

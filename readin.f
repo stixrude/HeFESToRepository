@@ -10,17 +10,19 @@
 
         integer nbulk,i,ia,ib,icfe,im,jm,iph,iphs,ispec
         integer iw,j,jco,jspec,k,ipar,natom,nbulk1,ncall,ndname,nmin,nw
+	integer mfit,nobm,noth,maxij,lineart,nbm,noln,iliq,jliq
 	double precision apar,dw,Pi,Pinitial,Telastic,Ti,vdoswr,w,w1,w2,zeror,vdos
         logical lox
         character*80 line
         character*1 blank
         character*2 atom(natomp),comp(natomp),xatom
-        character*80 dirname,fname,newfname,coxide
+        character*80 dirname,fname,newfname,coxide,lab
         character*80 phname(nphasep),sname(nspecp)
         double precision binit(ncompp),bfinal(ncompp)
         double precision wreg(nphasep,nsitep,nspecp,nspecp),vreg(nphasep,nsitep,nspecp,nspecp)
 	double precision fmom(24)
 	double precision wox(natomp),stox(natomp),wcomp(natomp),stcomp(natomp)
+	double precision aliq(nparp,nparp),aliqc,xx
         character(8)  :: date
         character(10) :: time
         character(5)  :: zone
@@ -30,6 +32,7 @@
         common /regcom/ wreg,vreg
         common /atomc/ stox,wox,wcomp,stcomp,atom,comp
         common /mag/ icfe
+        common /liqc/ aliqc(nspecp,nparp,nparp),mfit,nobm,noth,maxij,lineart,nbm,noln
         integer, parameter :: npar=43
         integer, parameter :: lmax = 1000
         data ncall/0/
@@ -158,6 +161,53 @@ c	 rewind 1
 c         read(1,*,end=40,err=40) apar(ispec,i)
 c40       write(2,*) i,apar(ispec,i)
 3        continue
+	 do 6 i=1,nparp
+	  do 6 j=1,nparp
+	   aliqc(ispec,i,j) = 0.
+6	 continue
+	 if (apar(ispec,31) .eq. 1.0 .or. apar(ispec,31) .eq. 4.0) then
+	  print*, 'INFORMATION: Liquid species found ',sname(ispec)
+C  Assume value of finite strain exponent in liquid equation of state (dekokerstixrude_09 Eq. 23)
+	  nbm = 2
+	  read(1,*,end=17,err=17) xx,xx,xx,lab
+	  if (lab .ne. 'liquid') go to 17
+	  print*, 'INFORMATION: Liquid found with aij listed in parameter file ',sname(ispec)
+C Liquid
+	  backspace (1)
+	  nobm = -1
+	  noth = -1
+	  noln = -1
+	  do 5 i=1,npar
+	   read(1,*,end=5,err=5) xx,iliq,jliq
+	   nobm = max(iliq,nobm)
+	   if (jliq .lt. 9) noth = max(jliq,noth)
+	   iliq = iliq + 1
+	   if (jliq .lt. 9) jliq = jliq + 1
+	   if (jliq .ge. 9) then
+	    lineart = jliq
+	    noln = noln + 1
+	   end if
+	   aliqc(ispec,iliq,jliq) = xx
+	   print*, 'Liquid',iliq-1,jliq-1,aliqc(ispec,iliq,jliq)
+5	  continue
+	  maxij = nobm + noth
+	  print*, 'Liquid',nobm,noth,noln,maxij,lineart
+	  go to 18
+17	  continue
+	  print*, 'INFORMATION: Liquid found with no aij listed in parameter file ',sname(ispec)
+	  nobm = 3
+	  noth = 1
+	  noln = 1
+	  maxij = nobm + noth
+	  lineart = 9
+	  call aliqset(ispec,aliq)
+	  do 7 i=1,npar
+	   do 7 j=1,npar
+	    aliqc(ispec,i,j) = aliq(i,j)
+7	  continue
+	  print*, 'Liquid aij calculated',nobm,noth,noln,maxij,lineart
+18	  continue
+	 end if
          f(iph,ispec) = 1.0
          close (1)
          w1 = 0.

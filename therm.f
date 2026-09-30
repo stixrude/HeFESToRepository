@@ -15,12 +15,12 @@
 	double precision qorder,qp,slan,tc,theo,ti,to,vlan,vo,vx,wd1,wd1o,wd2,wd2o,wd3,wd3o,we1,we1o,we2
         double precision we2o,we3,we3o,we4,we4o,wm,wol,wolo,wou,wouo,ws1,ws1o,ws2,ws2o,ws3,ws3o,xo,xt,xv
 	double precision zeto,zu,pel,Kel,gel,qel
-	double precision Etherm,Ctherm,Ztherm,Ftherm
+	double precision Etherm,Ctherm,Ztherm,Ftherm,fmth
         double precision Ko,Kop,Kopp,Kth,K,Kc,Ks
         double precision Kp,Ksp,Kpc,Kpth
 	double precision alpKc,alpc,agTc,Ksc,DKDTc,deltaTc,Kspc,rho,Vpc,Vsc,Gshc,Gshpc,Vdeb,Vdeb3
 	double precision dlnvpdlnv,dlnvsdlnv,dlnvdebdlnv,gamdeb
-	double precision un,pn,kn,kpn,Kbare,Kdiff,Kdiffmin
+	double precision un,pn,kn,kpn,Kbare,Kdiff,Kdiffmin,Toel
 
         common /state/ apar(nspecp,nparp),Ti,Pi
         common /names/ phname,sname
@@ -114,7 +114,7 @@ C  Ice VII-X contribution
 	pn = 0.
 	kn = 0.
 	kpn = 0.
-	if (sname(ispec)(1:4) .eq. "ice7") call icebcc(Vi,un,pn,kn,kpn)
+	if (sname(ispec)(1:4) .eq. "iceb" .or. sname(ispec)(1:4) .eq. "ices") call icebcc(Vi,un,pn,kn,kpn)
 
 	ezp = 0.0
         pzp = 0.0
@@ -143,16 +143,26 @@ c     &              we1,we2,we3,we4,qe1,qe2,qe3,qe4)
         Fel = -(beta/2.)*(Ti*Ti - To*To)
         Cvel = beta*Ti
         Cvelo = beta*To
+        pel = 0.001*0.5*ge*beta*(Ti*Ti - To*To)/Vi
+	ent = (uth - Fth)/Ti + beta*Ti
+C  -> 6/2/25.  Generalize exponent of electronic term so that it can differ from two. Using apar(ispec,33) as the value of the exponent (formerly used as Debye/Einstein switch).
+	fmth = apar(ispec,33)
+c	Toel = 1301.
+	Toel = To
+        Fel = -(beta/2.)*(Ti**fmth - Toel**fmth)
+        Cvel = 0.5*fmth*(fmth - 1.)*beta*Ti**(fmth-1)
+        Cvelo = 0.5*fmth*(fmth - 1.)*beta*Toel**(fmth - 1.)
+        pel = 0.001*0.5*ge*beta*(fmth - 1.)*(Ti**fmth - Toel**fmth)/Vi
+	ent = (uth - Fth)/Ti + fmth*0.5*beta*Ti**(fmth - 1.)
+C <-
         if (Ti .gt. 0.) gamma = (gamma*Cv + ge*Cvel)/(Cv + Cvel)
         Cv = Cv + Cvel
         Cvo = Cvo + Cvelo
         Cvn = Cv/(3.*fn*Rgas)
         Cvon = Cvo/(3.*fn*Rgas)
-        pel = 0.001*0.5*ge*beta*(Ti*Ti - To*To)/Vi
 	qel = 0.0
 	Kel = pel*(1. - ge - qel)
         Ftot = 1000.*Fo + Fbm + Fth - Ftho + Fpv + Fel
-        ent = (uth - Fth)/Ti + beta*Ti
 	if (Ti .le. 0.) ent = 0.
 
         K = Kc + Kth + Kel

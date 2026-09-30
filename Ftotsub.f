@@ -11,9 +11,9 @@
 	double precision ph,Pi,pzp,q,q2a2,qe1,qe2,qe3,qe4,qo,qorder,qp,slan,tc,theo,thet,Ti,to,uth,uto,vlan
 	double precision vo,volve,vx,wd1,wd1o,wd2,wd2o,wd3,wd3o,we1,we1o,we2,we2o,we3,we3o,we4,we4o,wm,wol
 	double precision wolo,wou,wouo,ws1,ws1o,ws2,ws2o,ws3,ws3o,xo,xt,zu
-	double precision Etherm,Ctherm,Ftherm
+	double precision Etherm,Ctherm,Ftherm,fmth
         double precision Ko,Kop,Kopp,Kc,Kth,K,alp,bkve,volnl
-	double precision un,pn,kn,kpn
+	double precision un,pn,kn,kpn,Toel
 	common /volent/ volve,entve,cpve,bkve
         common /state/ apar(nspecp,nparp),Ti,Pi
         common /names/ phname,sname
@@ -26,6 +26,7 @@
      &                    htl,ibv,ied,izp,
      &                    Go,Gop,Got)
 
+        fmth = apar(ispec,33)
         theo = wd1o
         gammo = gam
         call gamset(wd1o,wd2o,wd3o,ws1o,ws2o,ws3o,
@@ -74,7 +75,7 @@ C  Ice VII-X contribution
         pn = 0.
         kn = 0. 
 	kpn = 0.
-        if (sname(ispec)(1:4) .eq. "ice7") call icebcc(Vi,un,pn,kn,kpn)
+        if (sname(ispec)(1:4) .eq. "iceb" .or. sname(ispec)(1:4) .eq. "ices") call icebcc(Vi,un,pn,kn,kpn)
 
         ph = .001*(gamma/Vi)*(uth - uto)
         Kth = (gamma + 1. - q)*(ph + pzp) - .001*(gamma**2/Vi)*
@@ -86,13 +87,20 @@ C  Ice VII-X contribution
 
         beta = be*(Vi/Vo)**(ge)
 	entve = (uth - Fth)/Ti + beta*Ti
+        Fel = -(beta/2.)*(Ti*Ti - To*To)
+C  -> 6/2/25.  Generalize exponent of electronic term so that it can differ from two. Using apar(ispec,33) as the value of the exponent (formerly used as Debye/Einstein switch).
+        fmth = apar(ispec,33)
+c	Toel = 1301.
+	Toel = To
+        Fel = -(beta/2.)*(Ti**fmth - Toel**fmth)
+        entve = (uth - Fth)/Ti + fmth*0.5*beta*Ti**(fmth - 1.)
+C <-
 	if (Ti .le. 0.) entve = 0.
 
         Fpv = 1000.*Pi*Vi
-        Fel = -(beta/2.)*(Ti*Ti - To*To)
         Ftot = 1000.*Fo + Fbm + Fth - Ftho + Fpv + Fel
 
-c	print '(a8,99f16.5)', 'Ftotsub',Pi,Vi,Ti,thet,theo,gamma,gammo,q,Fth,Ftho,Fth-Ftho,uth,uto,Fpv,Ftot,Ftot-Fpv
+c	print '(a8,99f16.5)', 'Ftotsub',Pi,Vi,Ti,Fo,thet,theo,gamma,gammo,q,Fth,Ftho,Fth-Ftho,uth,uto,Fpv,Ftot,Ftot-Fpv,Fel,Fbm
 
 C Landau and Ice VII-X contributions
 C Choose: landau for inv251010 and earlier, landauqr for later

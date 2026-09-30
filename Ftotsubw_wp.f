@@ -17,8 +17,8 @@
 	double precision Vi,volnl,Cp,Cv,gamma,K,Ks,alp,Ftot,ph,ent,deltas,
      &                   tcal,zeta,Gsh,uth,uto,thet,q,etas,dGdT,pzp,Sel,Eel,Pel,Cvel,Eig,Pig,P,E
 	double precision apar,Ti,Pi,volve,entve,cpve,bkve,Fpv
-	double precision, parameter :: Sconst = 86.808 - 23.461793763133350		!  Recovers JANAF value at 372.78 K in J/mol/K
-        double precision, parameter :: Fconst = -236.839 - (-19.0987)                   !  Recovers JANAF value of DG_f at 300 K in J/mol/K
+        double precision, parameter :: Sconst = 84.164 - 20.82961565            !  Recovers JANAF value at 360 K in J/mol/K
+        double precision, parameter :: Fconst = -236.839 - (-19.09516677)       !  Recovers JANAF value of DG_f at 300 K in kJ/mol/K
 
         common /volent/ volve,entve,cpve,bkve
         common /state/ apar(nspecp,nparp),Ti,Pi

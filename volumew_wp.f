@@ -6,7 +6,7 @@
 
       CHARACTER(LEN=24) udescr
 
-      INTEGER nttyo, noutpt
+      INTEGER nttyo, noutpt, ncall
       INTEGER iter
 	integer ispec,jspec
 
@@ -26,6 +26,10 @@
       DATA tcr / 647.096d+00 /, rhocr / 322.0d+00 /,
      $ pcr / 22.064d0 /, rcnstw / 0.46151805d+00 /,
      $ xmcapw / 0.018015268d0 /
+
+        data ncall/0/
+        ncall = ncall + 1
+        if (ncall .eq. 1) write(31,*) "INFORMATION: WATER FTR OF WAGNER AND PRUSS 2002"
 
 C  Water equation of state is invalid below 273.15 K as per FDESCR (called by CALPRE)
 	if (Ti .lt. tmin) then

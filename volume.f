@@ -24,6 +24,13 @@ C  Set bounds on the volume
 	vu = min(vupp,vspupp)
 c	vlow = vl
 c	vupp = vu
+C->  Reset volume limits to those given by the finite strain expansion
+c	vlow = apar(ispec,53)
+c	vupp = apar(ispec,54)
+C<-
+C->  Reset volume limits to arbitrary value
+c	vlow = 1.0
+C<-
 c	print*, 'Vibrational limits on volume',vlow,vupp
 c	print*, 'K limits on volume',vsplow,vspupp
 
@@ -41,7 +48,7 @@ C  Fix volume to Vo and return if isochoric conditions have been chosen
 C  Find volume by cage using the last succesfully found volume as guess (x1)
         x2 = x1*(1.0 + tol)
 c	write(31,*) 'Calling cage the first time',vlow,vupp
-c	print*, 'In volume entering cage and pressure',vlow,vupp,x1,Pi,Ti
+c	print*, 'In volume entering cage and pressure',vlow,vupp,x1,x2,Pi,Ti
 	call cage(pressure,x1,x2,vlow,vupp,ires)
         p1 = pressure(x1)
         p2 = pressure(x2)
@@ -78,9 +85,12 @@ C  Value of function pressure is positive at Vsp: no solution.
 	end if
 C  Find volume by zbrak.  Search between V=Vo and V=Vsp
 	x1 = Vo
+C  Find volume by zbrak.  Search between V=vlow and V=Vsp
+	x1 = vlow
 	x2 = vsp
         nb = 10
 	nseg = 10
+c	print*, 'find volume by zbrak',Pi,Ti,x1,x2,nseg,nb
 	call cages(pressure,x1,x2,nseg,xb1,xb2,nb)
         if (nb .ge. 1) then
          volume = zeroin(xb1(1),xb2(1),pressure,tol)

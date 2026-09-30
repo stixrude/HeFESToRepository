@@ -1,4 +1,5 @@
-	subroutine thermw(ispec,Vi,volnl,CP,CV,gamma,K,KS,alp,Ftot,ent,pressure,E)
+	subroutine thermw(ispec,Vi,volnl,Cp,Cv,gamma,K,Ks,alp,Ftot,ph,ent,deltas,
+     &                   tcal,zeta,Gsh,uth,uto,thet,q,etas,dGdT,pzp,Sel,Eel,Pel,Cvel,Eig,Pig,P,E)
 
 C  Equation of state of Pitzer and Sterner (1994) JCP
 C  Ti in units of Kelvin
@@ -10,24 +11,32 @@ C  pressure in units of GPa
 	include 'water.inc'
 	include 'theory.inc'
 
-	double precision, parameter :: Sconst = 86.808 -  19.103896651846917	!	J/mol/K to recover JANAF value at 1 bar 373 K
-        integer i,ispec
+	double precision, parameter :: Sconst = 84.164 - 14.382988854989136	! J/mol/K to recover JANAF value at 1 bar 360 K
+        double precision, parameter :: Fconst = -241.4886 - (-26.138537296328337)	!  Recovers HeFESTo (WP) value of G at 360 K in kJ/mo
+C  Note that alternate strategy for constraining Fconst was necessary because PS94 diverges near 1 bar and room temperature, producing unphysical values
+        integer i,ispec,ncall
 	double precision c1,c2,c3,c4,c5,c6,c7,c8,c9,c10
 	double precision d1,d2,d3,d4,d5,d6,d7,d8,d9,d10
 	double precision e1,e2,e3,e4,e5,e6,e7,e8,e9,e10
-	double precision rho,Ftot,fac,dbl,ee,Fig,vratio,K,den,deriv1,deriv2,Tr,rhor,sum
-	double precision Sig,Fxs,S,ent,CVig,CV,Sxs,f,ft,ftt,Kig,akt,pt,p,dent,pressure,gamma
-	double precision CP,KS,alp,E,cs
-        double precision Pi,Ti,volnl
-        double precision Vi,apar
+        double precision Vi,volnl,Cp,Cv,gamma,K,Ks,alp,Ftot,ph,ent,deltas,
+     &                   tcal,zeta,Gsh,uth,uto,thet,q,etas,dGdT,pzp,Sel,Eel,Pel,Cvel,Eig,Pig,P,E,w,SNk
+	double precision rho,fac,dbl,ee,Fig,vratio,den,deriv1,deriv2,Tr,rhor,sum
+	double precision Sig,Fxs,S,CVig,Sxs,f,ft,ftt,Kig,akt,pt,dent,pressure,cs
+        double precision apar,Pi,Ti
         logical isochor
         common /state/ apar(nspecp,nparp),Ti,Pi
+        data ncall/0/
+        ncall = ncall + 1
+
+	if (ncall .eq. 1) write(31,*) "INFORMATION: WATER FTR OF PITZER AND STERNER 1994"
+
         fac = hplanck/sqrt(2.*pirad*boltzk)
         ee = exp(1.)
         dbl = fac/sqrt(Ti*wmol/(1000.*avn))
         vratio = (Vi/avn*1.e-6)/dbl**3
         Fig = -log(vratio*ee)
 	Sig = log(vratio) + 2.5
+c	print*, 'PS94 thermw'
 c	print*, 'De Broglie thermal wavelength (A)',dbl*1e10,fac,Ti,wmol,avn,hplanck,pirad,boltzk
 c	print*, 'Volume ratio',vratio
 c	print*, 'Ideal free energy, entropy',Fig,Sig
@@ -44,7 +53,7 @@ C  Ideal Part
         Fig = log(rhor) + a(1) + a(2)*Tr + a(3)*log(Tr) + sum
 c	print*, 'Fig reduced',Fig
         Fig = Rgas*Ti*Fig
-c	print*, 'Fig',Fig
+	print*, 'Fig thermw',Fig
 
 	sum = 0.
 	do 2 i=4,8
@@ -53,7 +62,7 @@ c	print*, 'Fig',Fig
 	Sig = a(2) + a(3)/Tr + sum
 c	print*, 'Sig reduced',Sig
 	Sig = Rgas*Tr*Sig - Fig/Ti
-c	print*, 'Sig',Sig
+	print*, 'Sig thermw',Sig
 
 	sum = 0.
 	do 3 i=4,8
@@ -108,8 +117,8 @@ C  Second temperature derivative of Equation 4
 C  Helmholtz free energy Equation 1.  f = F/RT.  F in J/mol
         f = c1*rho + 1./den - 1./c2
      &  - (c7/c8)*(exp(-c8*rho) - 1.) - (c9/c10)*(exp(-c10*rho) - 1.)
-	Ftot = Rgas*Ti*f + Fig - Ti*Sconst
-c	print*, 'f=F/RT',f
+	Ftot = Rgas*Ti*f + Fig - Ti*Sconst + 1000.*Fconst
+	print*, 'Ftot PS94',Ftot,f,Fig,Sconst
 
 C  Entropy.  ent in J/mol/K
 	ft = d1*rho - ((d2 + d3*rho + d4*rho**2 + d5*rho**3 + d6*rho**4)/den**2 - d2/c2**2) 
@@ -119,6 +128,7 @@ C  Entropy.  ent in J/mol/K
 c	print*, 'ft=df/dT',ft,-f*Ti/Tr
 	S = -Rgas*Ti*ft - Rgas*f + Sig
 	ent = S + Sconst
+	print*, 'Entropy PS94',ent,ft,f,Sig,Sconst
 
 C  Heat Capacity.  CV in J/mol/K
 	ftt = e1*rho - (e2 + e3*rho + e4*rho**2 + e5*rho**3 + e6*rho**4)/den**2
@@ -145,6 +155,7 @@ C  Pressure Equation 2. p=P/RT.  pressure in GPa
      &  - rho**2*((c3 + 2.*c4*rho + 3.*c5*rho**2 + 4.*c6*rho**3)/den**2)
      &  + c7*rho**2*exp(-c8*rho) + c9*rho**2*exp(-c10*rho)
 	pressure = Rgas*Ti*p/1000.
+	P = pressure
 
 C  Thermal pressure coefficient alpha*K_T.  akt in MPa/K
 	pt = d1*rho**2 - rho**2*((d3 + 2.*d4*rho + 3.*d5*rho**2 + 4.*d6*rho**3)/den**2 
@@ -171,6 +182,8 @@ C  Adiabatic bulk modulus
 
 C  Sound speed
 	cs = sqrt(KS*Vi/wmol)
+
+        print*, 'End of thermw',ent
 
 	return
 	end
